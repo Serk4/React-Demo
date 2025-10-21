@@ -2,8 +2,7 @@ require('dotenv').config()
 const sql = require('mssql/msnodesqlv8')
 
 const dbConfig = {
-	connectionString: `Server=(localdb)\\MSSQLLocalDB;Database=${process.env.DB_DATABASE};Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};`,
-	driver: 'msnodesqlv8',
+	connectionString: process.env.DB_CONNECTION_STRING,
 	pool: {
 		max: 10,
 		min: 0,
