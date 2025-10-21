@@ -1,25 +1,14 @@
-const sql = require('mssql')
-const path = require('path')
-require('dotenv').config({ path: path.join(__dirname, '.env') })
+require('dotenv').config()
+const sql = require('mssql/msnodesqlv8')
 
 const dbConfig = {
-	server: process.env.DB_SERVER,
-	database: process.env.DB_DATABASE,
-	port: parseInt(process.env.DB_PORT) || 1433,
-	options: {
-		encrypt: process.env.DB_ENCRYPT === 'true',
-		trustServerCertificate: process.env.DB_TRUST_CERT === 'true',
-		// Use integrated security for Windows Authentication
-		integratedSecurity: true,
-		instanceName: process.env.DB_INSTANCE,
-	},
+	connectionString: `Server=(localdb)\\MSSQLLocalDB;Database=${process.env.DB_DATABASE};Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};`,
+	driver: 'msnodesqlv8',
 	pool: {
 		max: 10,
 		min: 0,
 		idleTimeoutMillis: 30000,
 	},
-	connectionTimeout: 30000,
-	requestTimeout: 30000,
 }
 
 let pool
@@ -28,20 +17,18 @@ const initializeDatabase = async () => {
 	try {
 		console.log('🔍 Attempting to connect to SQL Server...')
 		console.log('Database config:', {
-			server: dbConfig.server,
-			database: dbConfig.database,
-			integratedSecurity: dbConfig.options.integratedSecurity,
-			encrypt: dbConfig.options.encrypt,
+			connectionString: dbConfig.connectionString,
 		})
 
 		pool = await sql.connect(dbConfig)
+		const result = await pool.request().query('SELECT 1 AS ping')
+		console.log('Ping result:', result.recordset)
 		console.log('✅ Connected to SQL Server database successfully!')
-		console.log(`🗄️  Connected to: ${dbConfig.server}\\${dbConfig.database}`)
+		console.log(`🗄️  Connected to LocalDB database`)
 		return pool
 	} catch (error) {
 		console.error('❌ Database connection failed:', error.message)
-		console.log('💡 Make sure SQL Server is running and accessible')
-		console.log('💡 Verify Windows Authentication is enabled')
+		console.log('❌ Full DB error:', JSON.stringify(error, null, 2))
 		throw error
 	}
 }

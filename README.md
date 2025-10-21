@@ -8,7 +8,8 @@ A modern full-stack web application built with React, TypeScript, Node.js, and S
 - **Professional UI**: Navigation menu bar with responsive design
 - **User Management**: Complete CRUD interface with data tables and statistics
 - **Node.js Backend**: Express.js REST API with comprehensive error handling
-- **Database Integration**: SQL Server connectivity with Windows Authentication
+- **Database Integration**: SQL Server LocalDB connectivity with Windows Authentication
+- **Automated Setup**: Database initialization script for easy development setup
 - **Fallback System**: Mock data fallback for development without database
 - **Security**: Environment-based configuration with sensitive data protection
 
@@ -16,8 +17,9 @@ A modern full-stack web application built with React, TypeScript, Node.js, and S
 
 - **Node.js** (v18 or higher)
 - **npm** (v9 or higher)
-- **SQL Server** (Express, Developer, or full version)
-- **Windows** (for SQL Server Windows Authentication)
+- **SQL Server LocalDB** (included with Visual Studio or SQL Server Express)
+- **Windows** (for LocalDB and Windows Authentication)
+- **ODBC Driver 17 for SQL Server** (usually pre-installed on Windows)
 
 ## 🛠️ Installation & Setup
 
@@ -41,65 +43,92 @@ cd server
 npm install
 ```
 
-### 4. Database Setup
+### 4. Database Setup (LocalDB)
 
-#### Option A: SQL Server Instance (Recommended)
+This application uses **SQL Server LocalDB** for easy development setup. LocalDB is a lightweight, on-demand version of SQL Server that's perfect for development.
 
-1. Create a database named `React-Demo` in your SQL Server instance
-2. Run the following SQL to create the Users table:
+#### Quick Setup (Recommended)
+
+Run the automated setup script to create the database and sample data:
+
+```bash
+cd server
+node setup-db.js
+```
+
+This script will:
+
+- Connect to LocalDB instance `(localdb)\MSSQLLocalDB`
+- Create the `React-Demo` database if it doesn't exist
+- Create the `Users` table with proper schema
+- Add sample user data for testing
+
+#### Manual Setup (Alternative)
+
+If you prefer manual setup or need to customize:
+
+1. **Verify LocalDB is running:**
+
+```bash
+sqllocaldb info MSSQLLocalDB
+```
+
+2. **Create database manually:**
+
+```bash
+sqlcmd -S "(localdb)\MSSQLLocalDB" -E -Q "CREATE DATABASE [React-Demo]"
+```
+
+3. **Create Users table:**
 
 ```sql
 USE [React-Demo];
 GO
 
--- Create Users table
 CREATE TABLE Users (
     Id INT PRIMARY KEY IDENTITY(1,1),
-    FirstName NVARCHAR(50),
-    LastName NVARCHAR(50),
-    Email NVARCHAR(100),
-    IsActive BIT
+    FirstName NVARCHAR(100) NOT NULL,
+    LastName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) NOT NULL,
+    IsActive BIT NOT NULL
 );
 GO
 
--- Insert sample users
+-- Add sample data
 INSERT INTO Users (FirstName, LastName, Email, IsActive)
 VALUES
-('Alice', 'Johnson', 'alice.johnson@example.com', 1),
-('Bob', 'Smith', 'bob.smith@example.com', 1),
-('Carol', 'Lee', 'carol.lee@example.com', 0),
-('David', 'Nguyen', 'david.nguyen@example.com', 1),
-('Eve', 'Martinez', 'eve.martinez@example.com', 0);
+('John', 'Doe', 'john@example.com', 1),
+('Jane', 'Smith', 'jane@example.com', 1),
+('Bob', 'Johnson', 'bob@example.com', 1),
+('Alice', 'Brown', 'alice@example.com', 0),
+('Charlie', 'Wilson', 'charlie@example.com', 1);
 GO
 ```
 
-#### Option B: LocalDB (Alternative)
-
-If using LocalDB, the app will automatically fall back to mock data if connection fails.
-
 ### 5. Environment Configuration
 
+Create the environment configuration file:
+
 ```bash
-# In the server directory, copy the example env file
 cd server
 copy .env.example .env
 ```
 
-Edit `.env` and update with your SQL Server details:
+Edit `.env` and set the database name:
 
 ```env
-# Replace YOUR_LAPTOP_NAME with your actual computer name
-DB_SERVER=YOUR_LAPTOP_NAME\MSSQLSERVER01
+# LocalDB Configuration
 DB_DATABASE=React-Demo
-DB_INSTANCE=MSSQLSERVER01
-DB_USER=
-DB_PASSWORD=
-DB_PORT=1433
-DB_ENCRYPT=false
-DB_TRUST_CERT=true
 
+# Server Configuration
 PORT=3001
 ```
+
+**Note**: LocalDB connection details are automatically configured. The app uses:
+
+- **Server**: `(localdb)\MSSQLLocalDB`
+- **Authentication**: Windows Authentication (Trusted Connection)
+- **Driver**: ODBC Driver 17 for SQL Server
 
 ## 🚀 Running the Application
 
@@ -149,8 +178,9 @@ React-Demo/
 ├── server/                      # Node.js backend
 │   ├── routes/                 # API route handlers
 │   │   └── users.js           # User CRUD operations
-│   ├── database.js            # Database connection & config
+│   ├── database.js            # LocalDB connection & config
 │   ├── server.js              # Express server setup
+│   ├── setup-db.js            # Database initialization script
 │   ├── .env.example           # Environment template (safe)
 │   └── .env                   # Your actual config (not in git)
 ├── public/                     # Static assets
@@ -187,12 +217,12 @@ curl -X POST http://localhost:3001/api/users \
 
 ### Database Connection
 
-The app supports multiple connection methods:
+The app uses **SQL Server LocalDB** with the following configuration:
 
-- SQL Server named instances
-- LocalDB instances
-- Windows Authentication (recommended)
-- SQL Server Authentication
+- **Connection String**: `Server=(localdb)\\MSSQLLocalDB;Database=React-Demo;Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};`
+- **Authentication**: Windows Authentication (passwordless)
+- **Database**: React-Demo (auto-created by setup script)
+- **Driver**: msnodesqlv8 with ODBC Driver 17
 
 ### Fallback Behavior
 
@@ -244,10 +274,35 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Database Connection Issues
 
-- Ensure SQL Server is running
-- Verify Windows Authentication is enabled
-- Check firewall settings for SQL Server port
-- Confirm database and table exist
+**LocalDB not found:**
+
+```bash
+# Check if LocalDB is installed
+sqllocaldb info
+
+# Start LocalDB if needed
+sqllocaldb start MSSQLLocalDB
+```
+
+**ODBC Driver issues:**
+
+- Ensure "ODBC Driver 17 for SQL Server" is installed
+- Download from Microsoft if missing
+- Verify with: `odbcad32.exe` (check System DSN tab)
+
+**Database setup fails:**
+
+```bash
+# Run the setup script with verbose output
+cd server
+node setup-db.js
+```
+
+**Connection timeout:**
+
+- Check Windows Firewall settings
+- Verify LocalDB is running: `sqllocaldb info MSSQLLocalDB`
+- Try restarting LocalDB: `sqllocaldb stop MSSQLLocalDB && sqllocaldb start MSSQLLocalDB`
 
 ### Frontend Issues
 
