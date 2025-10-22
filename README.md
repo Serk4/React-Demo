@@ -12,6 +12,9 @@ A modern full-stack web application built with React, TypeScript, Node.js, and S
 - **Automated Setup**: Database initialization script for easy development setup
 - **Fallback System**: Mock data fallback for development without database
 - **Security**: Environment-based configuration with sensitive data protection
+- **Automated Testing**: Comprehensive test suite with 28 API tests
+- **CI/CD Pipeline**: GitHub Actions workflow for automated testing and deployment
+- **Mock Mode Support**: Tests run in CI environments without database dependencies
 
 ## 📋 Prerequisites
 
@@ -20,6 +23,97 @@ A modern full-stack web application built with React, TypeScript, Node.js, and S
 - **SQL Server LocalDB** (included with Visual Studio or SQL Server Express)
 - **Windows** (for LocalDB and Windows Authentication)
 - **ODBC Driver 17 for SQL Server** (usually pre-installed on Windows)
+
+## 🧪 Testing & CI/CD
+
+### Automated Testing Suite
+
+This project includes a comprehensive testing suite with **28 automated tests** covering:
+
+- **Unit Tests**: Individual API endpoint testing (users.test.js)
+- **Integration Tests**: Full CRUD workflow validation (integration.test.js) 
+- **Basic Tests**: Health checks and connectivity (basic.test.js)
+- **Mock Mode**: Tests work without database (perfect for CI/CD)
+
+### Running Tests Locally
+
+```bash
+# Run all tests
+cd server
+npm test
+
+# Run specific test files
+npm test users.test.js
+npm test integration.test.js
+npm test basic.test.js
+
+# Run tests with coverage
+npm run test:coverage
+
+# Watch mode for development
+npm run test:watch
+```
+
+### CI/CD Pipeline
+
+The project uses **GitHub Actions** for automated testing and deployment:
+
+#### 🔄 **Automated Triggers**
+- **Every push** to `main` branch → Full pipeline runs
+- **Every push** to `feature/*` branches → Tests and validation
+- **Pull requests** to `main` → Complete validation before merge
+
+#### 🏗️ **Pipeline Jobs**
+
+**1. Test Job (Windows + Node.js 20.x)**
+```yaml
+- Checkout code from repository
+- Setup Node.js 20.x environment
+- Install frontend & backend dependencies
+- Run 28 comprehensive API tests in mock mode
+- Build React frontend for production
+- Verify build artifacts
+```
+
+**2. Lint Job (Ubuntu)**
+```yaml
+- Code quality checks with ESLint
+- TypeScript validation
+- Formatting verification
+```
+
+**3. Security Job (Ubuntu)**
+```yaml
+- npm audit for vulnerability scanning
+- Dependency security checks
+- Non-blocking security warnings
+```
+
+**4. Deploy Job (Ubuntu)**
+```yaml
+- Runs only on successful main branch pushes
+- Builds production artifacts
+- Ready for deployment to staging/production
+```
+
+#### 📊 **Test Results**
+- ✅ **28 tests** validate complete API functionality
+- ✅ **Mock mode** ensures tests work in CI environment
+- ✅ **Cross-platform** testing (Windows for SQL Server compatibility)
+- ✅ **Node.js 20.x** optimized for modern JavaScript features
+
+#### 🔍 **Pipeline Status**
+Check the **Actions** tab in GitHub to see:
+- ✅ Green checkmarks = All tests passing
+- ❌ Red X = Failed tests (blocks deployment)
+- 🟡 Yellow dot = Pipeline running
+
+The pipeline ensures code quality and prevents broken deployments by validating:
+- All API endpoints respond correctly
+- Database mock mode works properly  
+- Frontend builds successfully
+- No security vulnerabilities
+- Code meets style guidelines
 
 ## 🛠️ Installation & Setup
 
@@ -175,11 +269,23 @@ React-Demo/
 ├── server/                      # Node.js backend
 │   ├── routes/                 # API route handlers
 │   │   └── users.js           # User CRUD operations
+│   ├── tests/                 # Automated test suite
+│   │   ├── users.test.js      # User API unit tests (20 tests)
+│   │   ├── integration.test.js # CRUD workflow tests (5 tests)
+│   │   ├── basic.test.js      # Health check tests (3 tests)
+│   │   ├── setup.js           # Jest test configuration
+│   │   ├── testDatabase.js    # Database test utilities
+│   │   └── README.md          # Testing documentation
 │   ├── database.js            # LocalDB connection & config
 │   ├── server.js              # Express server setup
 │   ├── setup-db.js            # Database initialization script
+│   ├── jest.config.js         # Jest test framework config
 │   ├── .env.example           # Environment template (safe)
-│   └── .env                   # Your actual config (not in git)
+│   ├── .env                   # Your actual config (not in git)
+│   └── .env.test              # Test environment config
+├── .github/                    # GitHub Actions CI/CD
+│   └── workflows/
+│       └── ci-cd.yml          # Automated pipeline configuration
 ├── public/                     # Static assets
 └── package.json               # Frontend dependencies
 ```
