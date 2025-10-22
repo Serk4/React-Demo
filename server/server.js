@@ -33,16 +33,21 @@ const startServer = async () => {
 	}
 
 	// Start server regardless of database connection
-	app.listen(PORT, () => {
-		console.log(`🚀 Server running on http://localhost:${PORT}`)
-		console.log(`📡 API endpoints available at http://localhost:${PORT}/api`)
-		console.log(`🔍 Health check: http://localhost:${PORT}/api/health`)
-		console.log(
-			`💾 Database status: ${
-				dbConnected ? 'CONNECTED (Real data)' : 'DISCONNECTED (Mock data)'
-			}`
-		)
-	})
+	if (require.main === module) {
+		app.listen(PORT, () => {
+			console.log(`🚀 Server running on http://localhost:${PORT}`)
+			console.log(`📡 API endpoints available at http://localhost:${PORT}/api`)
+			console.log(`🔍 Health check: http://localhost:${PORT}/api/health`)
+			console.log(
+				`💾 Database status: ${
+					dbConnected ? 'CONNECTED (Real data)' : 'DISCONNECTED (Mock data)'
+				}`
+			)
+		})
+	}
 }
 
 startServer()
+
+// Export app for testing
+module.exports = app
