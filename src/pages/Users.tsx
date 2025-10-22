@@ -40,11 +40,48 @@ export default function Users() {
     fetchUsers();
   }, []);
 
-  const handleDelete = async (userId: number) => {
+  const handleDelete = (userId: number) => {
     if (!confirm('Are you sure you want to delete this user?')) {
       return;
     }
 
+    deleteUser(userId);
+  };
+
+  const handleCreate = () => {
+    // For now, we'll just show an alert. Later this can open a modal or form
+    const firstName = prompt('Enter first name:');
+    const lastName = prompt('Enter last name:');
+    const email = prompt('Enter email:');
+    
+    if (!firstName || !lastName || !email) {
+      alert('All fields are required');
+      return;
+    }
+
+    createUser(firstName, lastName, email);
+  };
+
+  const handleEdit = (user: User) => {
+    // Extract first and last name from the full name
+    const nameParts = user.name.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
+    const newFirstName = prompt('Enter first name:', firstName);
+    const newLastName = prompt('Enter last name:', lastName);
+    const newEmail = prompt('Enter email:', user.email);
+    const newStatus = confirm('Is user active? (OK = Active, Cancel = Inactive)') ? 'active' : 'inactive';
+    
+    if (!newFirstName || !newLastName || !newEmail) {
+      alert('All fields are required');
+      return;
+    }
+
+    updateUser(user.id, newFirstName, newLastName, newEmail, newStatus === 'active');
+  };
+
+  const deleteUser = async (userId: number) => {
     try {
       const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
         method: 'DELETE',
@@ -56,9 +93,68 @@ export default function Users() {
 
       // Remove user from local state
       setUsers(users.filter(user => user.id !== userId));
+      alert('User deleted successfully!');
     } catch (err) {
       console.error('Failed to delete user:', err);
       alert('Failed to delete user. Please try again.');
+    }
+  };
+
+  const createUser = async (firstName: string, lastName: string, email: string) => {
+    try {
+      const response = await fetch('http://localhost:3001/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName, 
+          email,
+          isActive: true
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newUser = await response.json();
+      // Add new user to local state
+      setUsers([...users, newUser]);
+      alert('User created successfully!');
+    } catch (err) {
+      console.error('Failed to create user:', err);
+      alert('Failed to create user. Please try again.');
+    }
+  };
+
+  const updateUser = async (userId: number, firstName: string, lastName: string, email: string, isActive: boolean) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          isActive
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedUser = await response.json();
+      // Update user in local state
+      setUsers(users.map(user => user.id === userId ? updatedUser : user));
+      alert('User updated successfully!');
+    } catch (err) {
+      console.error('Failed to update user:', err);
+      alert('Failed to update user. Please try again.');
     }
   };
 
@@ -77,6 +173,10 @@ export default function Users() {
         <h1>Users Management</h1>
         <p>Manage your application users from SQL Server database.</p>
         {error && <div className="error-message">{error}</div>}
+      </div>
+      
+      <div className="page-actions">
+        <button className='btn btn-add' onClick={handleCreate}>Create User</button>
       </div>
 
       <div className="users-table-container">
@@ -109,11 +209,8 @@ export default function Users() {
                 </td>
                 <td>
                   <div className="action-buttons">
-                    <button className="btn btn-edit">Edit</button>
-                    <button 
-                      className="btn btn-delete"
-                      onClick={() => handleDelete(user.id)}
-                    >
+                    <button className="btn btn-edit" onClick={() => handleEdit(user)}>Edit</button>
+                    <button className="btn btn-delete" onClick={() => handleDelete(user.id)}>
                       Delete
                     </button>
                   </div>

@@ -97,6 +97,12 @@
   font-size: 1.1rem;
 }
 
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 0;
+}
+
 .loading {
   text-align: center;
   font-size: 1.2rem;
@@ -197,6 +203,15 @@
 
 .btn-edit:hover {
   background: #0056b3;
+}
+
+.btn-add {
+  background: #28a745;
+  color: white;
+}
+
+.btn-add:hover {
+  background: #218838;
 }
 
 .btn-delete {
