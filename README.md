@@ -114,21 +114,18 @@ cd server
 copy .env.example .env
 ```
 
-Edit `.env` and set the database name:
+Edit `.env` and configure the database settings:
 
 ```env
 # LocalDB Configuration
 DB_DATABASE=React-Demo
+DB_CONNECTION_STRING=Server=(localdb)\MSSQLLocalDB;Database=React-Demo;Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};
 
 # Server Configuration
 PORT=3001
 ```
 
-**Note**: LocalDB connection details are automatically configured. The app uses:
-
-- **Server**: `(localdb)\MSSQLLocalDB`
-- **Authentication**: Windows Authentication (Trusted Connection)
-- **Driver**: ODBC Driver 17 for SQL Server
+**Note**: The connection string is now configurable via environment variables for better security and flexibility. You can modify the connection string in `.env` to connect to different LocalDB instances or databases as needed.
 
 ## 🚀 Running the Application
 
@@ -217,12 +214,19 @@ curl -X POST http://localhost:3001/api/users \
 
 ### Database Connection
 
-The app uses **SQL Server LocalDB** with the following configuration:
+The app uses **SQL Server LocalDB** with environment-based configuration:
 
-- **Connection String**: `Server=(localdb)\\MSSQLLocalDB;Database=React-Demo;Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};`
+- **Connection String**: Configurable via `DB_CONNECTION_STRING` in `.env` file
+- **Default**: `Server=(localdb)\MSSQLLocalDB;Database=React-Demo;Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};`
 - **Authentication**: Windows Authentication (passwordless)
-- **Database**: React-Demo (auto-created by setup script)
+- **Database**: Configurable via `DB_DATABASE` environment variable
 - **Driver**: msnodesqlv8 with ODBC Driver 17
+
+**Security Benefits:**
+
+- Connection details stored in `.env` (not in source code)
+- Easy to modify for different environments
+- Template provided in `.env.example`
 
 ### Fallback Behavior
 
@@ -235,8 +239,9 @@ If database connection fails, the app automatically:
 
 ## 🛡️ Security & Privacy
 
-- **Environment Variables**: Sensitive data stored in `.env` (excluded from git)
+- **Environment Variables**: Database connection strings and sensitive data stored in `.env` (excluded from git)
 - **Template File**: `.env.example` provides structure without exposing secrets
+- **Configurable Connections**: Database connection string can be customized per environment
 - **Windows Authentication**: Secure, passwordless database access
 - **CORS**: Configured for cross-origin requests
 - **Input Validation**: Server-side validation for all API inputs
