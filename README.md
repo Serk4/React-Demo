@@ -31,7 +31,7 @@ A modern full-stack web application built with React, TypeScript, Node.js, and S
 This project includes a comprehensive testing suite with **28 automated tests** covering:
 
 - **Unit Tests**: Individual API endpoint testing (users.test.js)
-- **Integration Tests**: Full CRUD workflow validation (integration.test.js) 
+- **Integration Tests**: Full CRUD workflow validation (integration.test.js)
 - **Basic Tests**: Health checks and connectivity (basic.test.js)
 - **Mock Mode**: Tests work without database (perfect for CI/CD)
 
@@ -59,6 +59,7 @@ npm run test:watch
 The project uses **GitHub Actions** for automated testing and deployment:
 
 #### 🔄 **Automated Triggers**
+
 - **Every push** to `main` branch → Full pipeline runs
 - **Every push** to `feature/*` branches → Tests and validation
 - **Pull requests** to `main` → Complete validation before merge
@@ -66,6 +67,7 @@ The project uses **GitHub Actions** for automated testing and deployment:
 #### 🏗️ **Pipeline Jobs**
 
 **1. Test Job (Windows + Node.js 20.x)**
+
 ```yaml
 - Checkout code from repository
 - Setup Node.js 20.x environment
@@ -76,6 +78,7 @@ The project uses **GitHub Actions** for automated testing and deployment:
 ```
 
 **2. Lint Job (Ubuntu)**
+
 ```yaml
 - Code quality checks with ESLint
 - TypeScript validation
@@ -83,6 +86,7 @@ The project uses **GitHub Actions** for automated testing and deployment:
 ```
 
 **3. Security Job (Ubuntu)**
+
 ```yaml
 - npm audit for vulnerability scanning
 - Dependency security checks
@@ -90,6 +94,7 @@ The project uses **GitHub Actions** for automated testing and deployment:
 ```
 
 **4. Deploy Job (Ubuntu)**
+
 ```yaml
 - Runs only on successful main branch pushes
 - Builds production artifacts
@@ -97,20 +102,24 @@ The project uses **GitHub Actions** for automated testing and deployment:
 ```
 
 #### 📊 **Test Results**
+
 - ✅ **28 tests** validate complete API functionality
 - ✅ **Mock mode** ensures tests work in CI environment
 - ✅ **Cross-platform** testing (Windows for SQL Server compatibility)
 - ✅ **Node.js 20.x** optimized for modern JavaScript features
 
 #### 🔍 **Pipeline Status**
+
 Check the **Actions** tab in GitHub to see:
+
 - ✅ Green checkmarks = All tests passing
 - ❌ Red X = Failed tests (blocks deployment)
 - 🟡 Yellow dot = Pipeline running
 
 The pipeline ensures code quality and prevents broken deployments by validating:
+
 - All API endpoints respond correctly
-- Database mock mode works properly  
+- Database mock mode works properly
 - Frontend builds successfully
 - No security vulnerabilities
 - Code meets style guidelines

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import UserCreateModal from '../components/UserCreateModal';
 
 interface User {
   id: number;
@@ -12,6 +13,9 @@ export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -49,17 +53,23 @@ export default function Users() {
   };
 
   const handleCreate = () => {
-    // For now, we'll just show an alert. Later this can open a modal or form
-    const firstName = prompt('Enter first name:');
-    const lastName = prompt('Enter last name:');
-    const email = prompt('Enter email:');
-    
-    if (!firstName || !lastName || !email) {
-      alert('All fields are required');
-      return;
-    }
+    setIsCreateModalOpen(true);
+  };
 
-    createUser(firstName, lastName, email);
+  const handleCreateUser = async (firstName: string, lastName: string, email: string) => {
+    setIsCreatingUser(true);
+    try {
+      await createUser(firstName, lastName, email);
+      setIsCreateModalOpen(false);
+      setSuccessMessage(`User ${firstName} ${lastName} created successfully!`);
+      // Clear success message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (error) {
+      // Error handling is done in createUser function
+      console.error('Failed to create user:', error);
+    } finally {
+      setIsCreatingUser(false);
+    }
   };
 
   const handleEdit = (user: User) => {
@@ -122,10 +132,11 @@ export default function Users() {
       const newUser = await response.json();
       // Add new user to local state
       setUsers([...users, newUser]);
-      alert('User created successfully!');
+      setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Failed to create user:', err);
-      alert('Failed to create user. Please try again.');
+      setError('Failed to create user. Please try again.');
+      throw err; // Re-throw to handle in calling function
     }
   };
 
@@ -173,6 +184,7 @@ export default function Users() {
         <h1>Users Management</h1>
         <p>Manage your application users from SQL Server database.</p>
         {error && <div className="error-message">{error}</div>}
+        {successMessage && <div className="success-message">{successMessage}</div>}
       </div>
       
       <div className="page-actions">
@@ -235,6 +247,13 @@ export default function Users() {
           <p>{users.filter(u => u.status === 'inactive').length}</p>
         </div>
       </div>
+
+      <UserCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateUser}
+        isLoading={isCreatingUser}
+      />
     </div>
   );
 }
