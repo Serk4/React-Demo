@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import UserCreateModal from '../components/UserCreateModal';
+import UserEditModal from '../components/UserEditModal';
 
 interface User {
   id: number;
@@ -16,6 +17,9 @@ export default function Users() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditingUser, setIsEditingUser] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -73,22 +77,25 @@ export default function Users() {
   };
 
   const handleEdit = (user: User) => {
-    // Extract first and last name from the full name
-    const nameParts = user.name.split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
-    
-    const newFirstName = prompt('Enter first name:', firstName);
-    const newLastName = prompt('Enter last name:', lastName);
-    const newEmail = prompt('Enter email:', user.email);
-    const newStatus = confirm('Is user active? (OK = Active, Cancel = Inactive)') ? 'active' : 'inactive';
-    
-    if (!newFirstName || !newLastName || !newEmail) {
-      alert('All fields are required');
-      return;
-    }
+    setUserToEdit(user);
+    setIsEditModalOpen(true);
+  };
 
-    updateUser(user.id, newFirstName, newLastName, newEmail, newStatus === 'active');
+  const handleEditUser = async (id: number, firstName: string, lastName: string, email: string, isActive: boolean) => {
+    setIsEditingUser(true);
+    try {
+      await updateUser(id, firstName, lastName, email, isActive);
+      setIsEditModalOpen(false);
+      setUserToEdit(null);
+      setSuccessMessage(`User ${firstName} ${lastName} updated successfully!`);
+      // Clear success message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (error) {
+      // Error handling is done in updateUser function
+      console.error('Failed to update user:', error);
+    } finally {
+      setIsEditingUser(false);
+    }
   };
 
   const deleteUser = async (userId: number) => {
@@ -162,10 +169,11 @@ export default function Users() {
       const updatedUser = await response.json();
       // Update user in local state
       setUsers(users.map(user => user.id === userId ? updatedUser : user));
-      alert('User updated successfully!');
+      setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Failed to update user:', err);
-      alert('Failed to update user. Please try again.');
+      setError('Failed to update user. Please try again.');
+      throw err; // Re-throw to handle in calling function
     }
   };
 
@@ -253,6 +261,17 @@ export default function Users() {
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateUser}
         isLoading={isCreatingUser}
+      />
+
+      <UserEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setUserToEdit(null);
+        }}
+        onSubmit={handleEditUser}
+        user={userToEdit}
+        isLoading={isEditingUser}
       />
     </div>
   );
