@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import UserCreateModal from '../components/UserCreateModal';
 import UserEditModal from '../components/UserEditModal';
+import { apiEndpoints } from '../config/api';
 
 interface User {
   id: number;
@@ -24,7 +25,7 @@ export default function Users() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/users');
+        const response = await fetch(apiEndpoints.users);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -100,7 +101,7 @@ export default function Users() {
 
   const deleteUser = async (userId: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+      const response = await fetch(`${apiEndpoints.users}/${userId}`, {
         method: 'DELETE',
       });
 
@@ -110,16 +111,16 @@ export default function Users() {
 
       // Remove user from local state
       setUsers(users.filter(user => user.id !== userId));
-      alert('User deleted successfully!');
+      setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Failed to delete user:', err);
-      alert('Failed to delete user. Please try again.');
+      setError('Failed to delete user. Please try again.');
     }
   };
 
   const createUser = async (firstName: string, lastName: string, email: string) => {
     try {
-      const response = await fetch('http://localhost:3001/api/users', {
+      const response = await fetch(apiEndpoints.users, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +150,7 @@ export default function Users() {
 
   const updateUser = async (userId: number, firstName: string, lastName: string, email: string, isActive: boolean) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+      const response = await fetch(`${apiEndpoints.users}/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
