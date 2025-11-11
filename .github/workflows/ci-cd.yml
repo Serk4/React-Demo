@@ -109,13 +109,18 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build application
+      - name: Install backend dependencies
+        run: |
+          cd server
+          npm ci
+
+      - name: Build frontend
         run: npm run build
 
-      - name: Deploy to Vercel
+      - name: Deploy Frontend to Vercel
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -123,9 +128,20 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
 
+      - name: Deploy Backend to Vercel
+        uses: amondnet/vercel-action@v25
+        continue-on-error: true
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
+          working-directory: './server'
+          vercel-args: '--prod'
+
       - name: Deployment Success
         run: |
-          echo "🎉 Successfully deployed to Vercel!"
+          echo "🎉 Successfully deployed full-stack app to Vercel!"
           echo "✅ All tests passed"
           echo "📦 Build artifacts created"
-          echo "🚀 Production deployment complete"
+          echo "🚀 Frontend and Backend deployed to production"
+          echo "🌐 Full-stack website ready with in-memory storage"

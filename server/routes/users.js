@@ -1,10 +1,10 @@
 const express = require('express')
-const { getPool, isConnected, sql } = require('../database')
+const { getPool, isConnected } = require('../database-mysql')
 
 const router = express.Router()
 
-// Mock data for when database is not connected
-const mockUsers = [
+// In-memory storage fallback when MySQL is not available
+let users = [
 	{
 		id: 1,
 		name: 'Alice Johnson',
@@ -42,52 +42,51 @@ const mockUsers = [
 	},
 ]
 
+let nextId = 6
+
 // GET /api/users - Get all users
 router.get('/', async (req, res) => {
 	try {
 		console.log('🔍 Checking database connection status...')
 
 		if (!isConnected()) {
-			throw new Error('Database connection not available')
+			console.log('📊 Using in-memory storage fallback')
+			return res.json(users)
 		}
 
 		const pool = getPool()
-		console.log('📡 Executing SQL query to fetch users...')
+		console.log('📡 Executing MySQL query to fetch users...')
 
-		const result = await pool.request().query(`
-                SELECT 
-                    Id as id,
-                    FirstName as firstName,
-                    LastName as lastName,
-                    Email as email,
-                    IsActive as isActive
-                FROM Users
-                ORDER BY Id
-            `)
-
-		console.log(`📊 Raw query result: ${result.recordset.length} records found`)
+		const [rows] = await pool.execute(`
+			SELECT 
+				id,
+				first_name,
+				last_name,
+				email,
+				is_active,
+				created_at,
+				updated_at
+			FROM users
+			ORDER BY id
+		`)
 
 		// Transform data to match frontend interface
-		const users = result.recordset.map((user) => ({
+		const transformedUsers = rows.map((user) => ({
 			id: user.id,
-			name: `${user.firstName} ${user.lastName}`,
+			name: `${user.first_name} ${user.last_name}`,
 			email: user.email,
-			role: 'User', // Default role since it's not in DB
-			status: user.isActive ? 'active' : 'inactive',
+			role: 'User', // Default role
+			status: user.is_active ? 'active' : 'inactive',
 		}))
 
 		console.log(
-			`✅ Successfully fetched ${users.length} users from SQL Server database`
+			`✅ Successfully fetched ${transformedUsers.length} users from MySQL`
 		)
-		res.json(users)
+		res.json(transformedUsers)
 	} catch (error) {
-		console.error('❌ Error fetching users from database:')
-		console.error('   Error message:', error.message)
-		console.error('   Error type:', error.constructor.name)
-		console.error('   Full error:', error)
-		console.log('📊 Returning mock data as fallback')
-		// Return mock data if database fails
-		res.json(mockUsers)
+		console.error('❌ Error fetching users from MySQL:', error.message)
+		console.log('📊 Returning in-memory data as fallback')
+		res.json(users)
 	}
 })
 
@@ -95,29 +94,41 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
 	try {
 		const { id } = req.params
-		const pool = getPool()
-		const result = await pool.request().input('id', sql.Int, id).query(`
-                SELECT 
-                    Id as id,
-                    FirstName as firstName,
-                    LastName as lastName,
-                    Email as email,
-                    IsActive as isActive
-                FROM Users
-                WHERE Id = @id
-            `)
 
-		if (result.recordset.length === 0) {
+		if (!isConnected()) {
+			const user = users.find((u) => u.id === parseInt(id))
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' })
+			}
+			return res.json(user)
+		}
+
+		const pool = getPool()
+		const [rows] = await pool.execute(
+			`
+			SELECT 
+				id,
+				first_name,
+				last_name,
+				email,
+				is_active
+			FROM users
+			WHERE id = ?
+		`,
+			[id]
+		)
+
+		if (rows.length === 0) {
 			return res.status(404).json({ error: 'User not found' })
 		}
 
-		const user = result.recordset[0]
+		const user = rows[0]
 		const transformedUser = {
 			id: user.id,
-			name: `${user.firstName} ${user.lastName}`,
+			name: `${user.first_name} ${user.last_name}`,
 			email: user.email,
 			role: 'User',
-			status: user.isActive ? 'active' : 'inactive',
+			status: user.is_active ? 'active' : 'inactive',
 		}
 
 		res.json(transformedUser)
@@ -138,28 +149,38 @@ router.post('/', async (req, res) => {
 				.json({ error: 'FirstName, LastName, and Email are required' })
 		}
 
-		const pool = getPool()
-		const result = await pool
-			.request()
-			.input('firstName', sql.NVarChar(50), firstName)
-			.input('lastName', sql.NVarChar(50), lastName)
-			.input('email', sql.NVarChar(100), email)
-			.input('isActive', sql.Bit, isActive).query(`
-                INSERT INTO Users (FirstName, LastName, Email, IsActive)
-                OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.LastName, INSERTED.Email, INSERTED.IsActive
-                VALUES (@firstName, @lastName, @email, @isActive)
-            `)
-
-		const newUser = result.recordset[0]
-		const transformedUser = {
-			id: newUser.Id,
-			name: `${newUser.FirstName} ${newUser.LastName}`,
-			email: newUser.Email,
-			role: 'User',
-			status: newUser.IsActive ? 'active' : 'inactive',
+		if (!isConnected()) {
+			const newUser = {
+				id: nextId++,
+				name: `${firstName} ${lastName}`,
+				email: email,
+				role: 'User',
+				status: isActive ? 'active' : 'inactive',
+			}
+			users.push(newUser)
+			console.log(`✅ Created new user in memory: ${newUser.name}`)
+			return res.status(201).json(newUser)
 		}
 
-		res.status(201).json(transformedUser)
+		const pool = getPool()
+		const [result] = await pool.execute(
+			`
+			INSERT INTO users (first_name, last_name, email, is_active)
+			VALUES (?, ?, ?, ?)
+		`,
+			[firstName, lastName, email, isActive]
+		)
+
+		const newUser = {
+			id: result.insertId,
+			name: `${firstName} ${lastName}`,
+			email: email,
+			role: 'User',
+			status: isActive ? 'active' : 'inactive',
+		}
+
+		console.log(`✅ Created new user in MySQL: ${newUser.name}`)
+		res.status(201).json(newUser)
 	} catch (error) {
 		console.error('Error creating user:', error)
 		res.status(500).json({ error: 'Failed to create user' })
@@ -172,38 +193,60 @@ router.put('/:id', async (req, res) => {
 		const { id } = req.params
 		const { firstName, lastName, email, isActive } = req.body
 
-		const pool = getPool()
-		const result = await pool
-			.request()
-			.input('id', sql.Int, id)
-			.input('firstName', sql.NVarChar(50), firstName)
-			.input('lastName', sql.NVarChar(50), lastName)
-			.input('email', sql.NVarChar(100), email)
-			.input('isActive', sql.Bit, isActive).query(`
-                UPDATE Users 
-                SET 
-                    FirstName = @firstName,
-                    LastName = @lastName,
-                    Email = @email,
-                    IsActive = @isActive
-                OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.LastName, INSERTED.Email, INSERTED.IsActive
-                WHERE Id = @id
-            `)
+		// Validate required fields
+		if (!firstName || !lastName || !email) {
+			return res
+				.status(400)
+				.json({ error: 'FirstName, LastName, and Email are required' })
+		}
 
-		if (result.recordset.length === 0) {
+		if (!isConnected()) {
+			const userIndex = users.findIndex((u) => u.id === parseInt(id))
+
+			if (userIndex === -1) {
+				return res.status(404).json({ error: 'User not found' })
+			}
+
+			const updatedUser = {
+				...users[userIndex],
+				name: `${firstName} ${lastName}`,
+				email: email,
+				status: isActive ? 'active' : 'inactive',
+			}
+
+			users[userIndex] = updatedUser
+			console.log(`✅ Updated user in memory: ${updatedUser.name}`)
+			return res.json(updatedUser)
+		}
+
+		const pool = getPool()
+		const [result] = await pool.execute(
+			`
+			UPDATE users 
+			SET 
+				first_name = ?,
+				last_name = ?,
+				email = ?,
+				is_active = ?
+			WHERE id = ?
+		`,
+			[firstName, lastName, email, isActive, id]
+		)
+
+		if (result.affectedRows === 0) {
 			return res.status(404).json({ error: 'User not found' })
 		}
 
-		const updatedUser = result.recordset[0]
-		const transformedUser = {
-			id: updatedUser.Id,
-			name: `${updatedUser.FirstName} ${updatedUser.LastName}`,
-			email: updatedUser.Email,
+		const updatedUser = {
+			id: parseInt(id),
+			name: `${firstName} ${lastName}`,
+			email: email,
 			role: 'User',
-			status: updatedUser.IsActive ? 'active' : 'inactive',
+			status: isActive ? 'active' : 'inactive',
 		}
 
-		res.json(transformedUser)
+		console.log(`✅ Updated user in MySQL: ${updatedUser.name}`)
+		res.json(updatedUser)
 	} catch (error) {
 		console.error('Error updating user:', error)
 		res.status(500).json({ error: 'Failed to update user' })
@@ -215,16 +258,32 @@ router.delete('/:id', async (req, res) => {
 	try {
 		const { id } = req.params
 
-		const pool = getPool()
-		const result = await pool.request().input('id', sql.Int, id).query(`
-                DELETE FROM Users 
-                WHERE Id = @id
-            `)
+		if (!isConnected()) {
+			const userIndex = users.findIndex((u) => u.id === parseInt(id))
 
-		if (result.rowsAffected[0] === 0) {
+			if (userIndex === -1) {
+				return res.status(404).json({ error: 'User not found' })
+			}
+
+			const deletedUser = users.splice(userIndex, 1)[0]
+			console.log(`✅ Deleted user from memory: ${deletedUser.name}`)
+			return res.json({ message: 'User deleted successfully' })
+		}
+
+		const pool = getPool()
+		const [result] = await pool.execute(
+			`
+			DELETE FROM users 
+			WHERE id = ?
+		`,
+			[id]
+		)
+
+		if (result.affectedRows === 0) {
 			return res.status(404).json({ error: 'User not found' })
 		}
 
+		console.log(`✅ Deleted user from MySQL: ID ${id}`)
 		res.json({ message: 'User deleted successfully' })
 	} catch (error) {
 		console.error('Error deleting user:', error)

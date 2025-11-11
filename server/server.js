@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { initializeDatabase } = require('./database')
+const { initializeDatabase } = require('./database-mysql')
 const usersRoutes = require('./routes/users')
 
 const app = express()
@@ -15,7 +15,12 @@ app.use('/api/users', usersRoutes)
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-	res.json({ status: 'OK', message: 'Server is running' })
+	res.json({
+		status: 'OK',
+		message: 'Server is running',
+		environment: process.env.VERCEL ? 'production' : 'development',
+		database: process.env.MYSQL_HOST ? 'MySQL' : 'in-memory fallback',
+	})
 })
 
 // Initialize database and start server
@@ -23,16 +28,15 @@ const startServer = async () => {
 	let dbConnected = false
 	try {
 		await initializeDatabase()
-		console.log('✅ Database connected successfully!')
-		console.log('🗄️  Using SQL Server LocalDB for user data')
+		console.log('✅ MySQL database connected successfully!')
 		dbConnected = true
 	} catch (error) {
-		console.error('❌ Database connection failed:', error.message)
-		console.log('⚠️  Server will start without database connection')
-		console.log('📊 API endpoints will return mock data as fallback')
+		console.error('❌ MySQL database connection failed:', error.message)
+		console.log('⚠️  Server will start with in-memory storage as fallback')
+		console.log('📊 API endpoints will return mock/temporary data')
 	}
 
-	// Start server regardless of database connection
+	// Start server (only in local development)
 	if (require.main === module) {
 		app.listen(PORT, () => {
 			console.log(`🚀 Server running on http://localhost:${PORT}`)
@@ -40,14 +44,15 @@ const startServer = async () => {
 			console.log(`🔍 Health check: http://localhost:${PORT}/api/health`)
 			console.log(
 				`💾 Database status: ${
-					dbConnected ? 'CONNECTED (Real data)' : 'DISCONNECTED (Mock data)'
+					dbConnected ? 'CONNECTED (MySQL)' : 'FALLBACK (In-memory)'
 				}`
 			)
 		})
 	}
 }
 
+// Initialize on startup
 startServer()
 
-// Export app for testing
+// Export app for Vercel and testing
 module.exports = app

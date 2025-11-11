@@ -315,7 +315,7 @@ describe('Users API', () => {
 			await request(app)
 				.put(`/api/users/${testUserId}`)
 				.send(incompleteUpdate)
-				.expect(500) // Server error due to missing fields
+				.expect(400) // Bad request due to missing fields
 		})
 	})
 

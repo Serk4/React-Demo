@@ -1,39 +1,54 @@
-# React Demo - Full-Stack User Management Application
+# React Demo - Complete CI/CD Pipeline Application
 
-A modern full-stack web application built with React, TypeScript, Node.js, and SQL Server. Features a professional user management interface with CRUD operations and real-time database integration.
+A modern full-stack web application built with React, TypeScript, Node.js, and MySQL. Features a professional user management interface with CRUD operations, comprehensive testing, and automated CI/CD deployment to Vercel.
 
 ## 🚀 Features
 
 - **React Frontend**: Modern React 19 with TypeScript and Vite
-- **Professional UI**: Navigation menu bar with responsive design
-- **User Management**: Complete CRUD interface with data tables and statistics
-- **Node.js Backend**: Express.js REST API with comprehensive error handling
-- **Database Integration**: SQL Server LocalDB connectivity with Windows Authentication
-- **Automated Setup**: Database initialization script for easy development setup
-- **Fallback System**: Mock data fallback for development without database
-- **Security**: Environment-based configuration with sensitive data protection
+- **Professional UI**: Navigation menu with responsive design and user edit modals
+- **User Management**: Complete CRUD interface with data tables and real-time updates
+- **Node.js Backend**: Express.js REST API with MySQL database integration
+- **MySQL Database**: Local development with MySQL, cloud-ready for production
+- **Smart Fallback**: Graceful degradation from MySQL to in-memory storage
 - **Automated Testing**: Comprehensive test suite with 28 API tests
-- **CI/CD Pipeline**: GitHub Actions workflow for automated testing and deployment
-- **Mock Mode Support**: Tests run in CI environments without database dependencies
+- **CI/CD Pipeline**: GitHub Actions with automated testing and Vercel deployment
+- **Dual Deployment**: Separate frontend and backend projects on Vercel
+- **Environment Parity**: Local development closely matches production
 
 ## 📋 Prerequisites
 
 - **Node.js** (v18 or higher)
 - **npm** (v9 or higher)
-- **SQL Server LocalDB** (included with Visual Studio or SQL Server Express)
-- **Windows** (for LocalDB and Windows Authentication)
-- **ODBC Driver 17 for SQL Server** (usually pre-installed on Windows)
+- **MySQL** (Local development - XAMPP recommended for Windows)
+- **Git** (For version control and CI/CD)
+- **Vercel CLI** (Optional - for manual deployment)
+
+## 🗄️ Database Options
+
+### Local Development
+
+- **XAMPP MySQL**: Easy Windows setup (recommended)
+- **MySQL Server**: Direct installation
+- **Docker MySQL**: Containerized setup
+- **Fallback Mode**: In-memory storage if MySQL unavailable
+
+### Production
+
+- **PlanetScale**: Free tier, MySQL-compatible, serverless-optimized
+- **Railway**: Simple setup with persistent storage
+- **Vercel Storage**: Native Vercel integration (when available)
+- **AWS RDS**: Enterprise-grade MySQL hosting
 
 ## 🧪 Testing & CI/CD
 
-### Automated Testing Suite
+### Comprehensive Testing Suite
 
-This project includes a comprehensive testing suite with **28 automated tests** covering:
+This project includes **28 automated tests** covering:
 
-- **Unit Tests**: Individual API endpoint testing (users.test.js)
-- **Integration Tests**: Full CRUD workflow validation (integration.test.js)
-- **Basic Tests**: Health checks and connectivity (basic.test.js)
-- **Mock Mode**: Tests work without database (perfect for CI/CD)
+- **API Tests**: Complete CRUD operations (users.test.js - 21 tests)
+- **Integration Tests**: Full workflow validation (integration.test.js - 4 tests)
+- **Health Checks**: System connectivity (basic.test.js - 3 tests)
+- **Mock Mode**: Tests work with or without database (perfect for CI/CD)
 
 ### Running Tests Locally
 
@@ -54,75 +69,69 @@ npm run test:coverage
 npm run test:watch
 ```
 
-### CI/CD Pipeline
+### CI/CD Pipeline with Vercel Deployment
 
-The project uses **GitHub Actions** for automated testing and deployment:
+The project uses **GitHub Actions** for automated testing and **dual Vercel deployment**:
 
 #### 🔄 **Automated Triggers**
 
-- **Every push** to `main` branch → Full pipeline runs
+- **Every push** to `main` branch → Full pipeline + production deployment
 - **Every push** to `feature/*` branches → Tests and validation
 - **Pull requests** to `main` → Complete validation before merge
 
-#### 🏗️ **Pipeline Jobs**
+#### 🏗️ **Multi-Job Pipeline**
 
 **1. Test Job (Windows + Node.js 20.x)**
 
 ```yaml
-- Checkout code from repository
-- Setup Node.js 20.x environment
-- Install frontend & backend dependencies
-- Run 28 comprehensive API tests in mock mode
-- Build React frontend for production
-- Verify build artifacts
+✅ Checkout code from repository
+✅ Setup Node.js 20.x with dependency caching
+✅ Install frontend & backend dependencies
+✅ Run 28 comprehensive API tests (MySQL fallback mode)
+✅ Build React frontend for production
+✅ Verify build artifacts and exit codes
 ```
 
 **2. Lint Job (Ubuntu)**
 
 ```yaml
-- Code quality checks with ESLint
-- TypeScript validation
-- Formatting verification
+✅ ESLint code quality validation
+✅ TypeScript type checking
+✅ Formatting and style verification
 ```
 
 **3. Security Job (Ubuntu)**
 
 ```yaml
-- npm audit for vulnerability scanning
-- Dependency security checks
-- Non-blocking security warnings
+✅ npm audit vulnerability scanning
+✅ Frontend & backend dependency checks
+✅ Security warnings (non-blocking)
 ```
 
 **4. Deploy Job (Ubuntu)**
 
 ```yaml
-- Runs only on successful main branch pushes
-- Builds production artifacts
-- Ready for deployment to staging/production
+✅ Runs only on successful main branch pushes
+✅ Deploys Frontend to Vercel (React SPA)
+✅ Deploys Backend to Vercel (Node.js serverless)
+✅ Updates production URLs automatically
+✅ Environment-specific configuration
 ```
 
-#### 📊 **Test Results**
+#### 📊 **Deployment Architecture**
 
-- ✅ **28 tests** validate complete API functionality
-- ✅ **Mock mode** ensures tests work in CI environment
-- ✅ **Cross-platform** testing (Windows for SQL Server compatibility)
-- ✅ **Node.js 20.x** optimized for modern JavaScript features
+- **Frontend**: `react-demo` Vercel project (Static site)
+- **Backend**: `server` Vercel project (Serverless functions)
+- **Database**: MySQL (local) → In-memory (production) → Cloud MySQL (upgradeable)
+- **Environment**: Development/production configuration via environment variables
 
 #### 🔍 **Pipeline Status**
 
 Check the **Actions** tab in GitHub to see:
 
-- ✅ Green checkmarks = All tests passing
-- ❌ Red X = Failed tests (blocks deployment)
+- ✅ Green checkmarks = All tests passing, deployment successful
+- ❌ Red X = Failed tests/deployment (blocks production)
 - 🟡 Yellow dot = Pipeline running
-
-The pipeline ensures code quality and prevents broken deployments by validating:
-
-- All API endpoints respond correctly
-- Database mock mode works properly
-- Frontend builds successfully
-- No security vulnerabilities
-- Code meets style guidelines
 
 ## 🛠️ Installation & Setup
 
@@ -130,105 +139,67 @@ The pipeline ensures code quality and prevents broken deployments by validating:
 
 ```bash
 git clone https://github.com/Serk4/React-Demo.git
-cd React-Demo
+cd react-demo
 ```
 
-### 2. Install Frontend Dependencies
+### 2. Install Dependencies
 
 ```bash
+# Install frontend dependencies
 npm install
+
+# Install backend dependencies
+cd server
+npm install
+cd ..
 ```
 
-### 3. Install Backend Dependencies
+### 3. Database Setup (MySQL)
+
+#### Option A: XAMPP (Recommended for Windows)
+
+1. **Download XAMPP** from https://www.apachefriends.org/
+2. **Install XAMPP** and start the MySQL service
+3. **MySQL runs on** `localhost:3306` with user `root` (no password)
+
+#### Option B: MySQL Server Direct Install
+
+1. **Download MySQL Server** from https://dev.mysql.com/downloads/
+2. **Install and configure** MySQL server
+3. **Note your credentials** for environment configuration
+
+#### Option C: Docker MySQL
+
+```bash
+docker run --name mysql-dev -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=react_demo -p 3306:3306 -d mysql:8.0
+```
+
+#### Verify MySQL Setup
 
 ```bash
 cd server
-npm install
-```
-
-### 4. Database Setup (LocalDB)
-
-This application uses **SQL Server LocalDB** for easy development setup. LocalDB is a lightweight, on-demand version of SQL Server that's perfect for development.
-
-#### Quick Setup (Recommended)
-
-Run the automated setup script to create the database and sample data:
-
-```bash
-cd server
-node setup-db.js
+node verify-mysql.js
 ```
 
 This script will:
 
-- Connect to LocalDB instance `(localdb)\MSSQLLocalDB`
-- Create the `React-Demo` database if it doesn't exist
-- Create the `Users` table with proper schema
-- Add sample user data for testing
+- ✅ Test MySQL connection
+- ✅ Create `react_demo` database if needed
+- ✅ Set up `users` table with sample data
+- ✅ Display current data status
 
-#### Manual Setup (Alternative)
+### 4. Environment Configuration
 
-If you prefer manual setup or need to customize:
-
-1. **Verify LocalDB is running:**
-
-```bash
-sqllocaldb info MSSQLLocalDB
-```
-
-2. **Create database manually:**
-
-```bash
-sqlcmd -S "(localdb)\MSSQLLocalDB" -E -Q "CREATE DATABASE [React-Demo]"
-```
-
-3. **Create Users table:**
-
-```sql
-USE [React-Demo];
-GO
-
-CREATE TABLE Users (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    FirstName NVARCHAR(100) NOT NULL,
-    LastName NVARCHAR(100) NOT NULL,
-    Email NVARCHAR(100) NOT NULL,
-    IsActive BIT NOT NULL
-);
-GO
-
--- Add sample data
-INSERT INTO Users (FirstName, LastName, Email, IsActive)
-VALUES
-('John', 'Doe', 'john@example.com', 1),
-('Jane', 'Smith', 'jane@example.com', 1),
-('Bob', 'Johnson', 'bob@example.com', 1),
-('Alice', 'Brown', 'alice@example.com', 0),
-('Charlie', 'Wilson', 'charlie@example.com', 1);
-GO
-```
-
-### 5. Environment Configuration
-
-Create the environment configuration file:
-
-```bash
-cd server
-copy .env.example .env
-```
-
-Edit `.env` and configure the database settings:
+The backend is pre-configured for standard MySQL setups:
 
 ```env
-# LocalDB Configuration
-DB_DATABASE=React-Demo
-DB_CONNECTION_STRING=Server=(localdb)\MSSQLLocalDB;Database=React-Demo;Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};
-
-# Server Configuration
-PORT=3001
+# MySQL Configuration (server/.env)
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=           # Empty for XAMPP default
+MYSQL_DATABASE=react_demo
+MYSQL_PORT=3306
 ```
-
-**Note**: The connection string is now configurable via environment variables for better security and flexibility. You can modify the connection string in `.env` to connect to different LocalDB instances or databases as needed.
 
 ## 🚀 Running the Application
 
@@ -238,7 +209,7 @@ PORT=3001
 
 ```bash
 cd server
-node server.js
+npm run dev
 ```
 
 **Terminal 2 - React Frontend:**
@@ -249,9 +220,10 @@ npm run dev
 
 The application will be available at:
 
-- **Frontend**: http://localhost:5173
+- **Frontend**: http://localhost:5173 (or http://localhost:5174 if 5173 is busy)
 - **Backend API**: http://localhost:3001
 - **Health Check**: http://localhost:3001/api/health
+- **Database Status**: Check console logs for MySQL connection status
 
 ### Production Mode
 
@@ -259,43 +231,64 @@ The application will be available at:
 # Build the React app
 npm run build
 
-# Serve the built app
+# Preview the built app
 npm run preview
 ```
+
+## 🌐 Live Deployment
+
+### Production URLs
+
+- **Frontend**: https://react-demo-[deployment-id].vercel.app
+- **Backend API**: https://server-[deployment-id].vercel.app
+- **Users Page**: https://react-demo-[deployment-id].vercel.app/users
+
+### Database in Production
+
+- **Current**: In-memory storage (resets periodically)
+- **Upgrade Options**: PlanetScale, Railway, or other cloud MySQL
+- **Smart Fallback**: Always works even without persistent storage
 
 ## 📁 Project Structure
 
 ```
-React-Demo/
+react-demo/
 ├── src/                          # React frontend source
 │   ├── components/               # Reusable React components
+│   │   ├── Modal.tsx            # Base modal component
+│   │   ├── UserCreateModal.tsx  # User creation modal
+│   │   └── UserEditModal.tsx    # User editing modal with validation
+│   ├── config/                  # Configuration
+│   │   └── api.ts               # API endpoint configuration
 │   ├── pages/                   # Page components
-│   │   ├── Home.tsx            # Home page with demo content
+│   │   ├── Home.tsx            # Landing page
 │   │   └── Users.tsx           # User management interface
-│   ├── App.tsx                 # Main app component with routing
-│   ├── App.css                 # Application styling
+│   ├── App.tsx                 # Main app with routing
 │   └── main.tsx                # React entry point
 ├── server/                      # Node.js backend
 │   ├── routes/                 # API route handlers
 │   │   └── users.js           # User CRUD operations
 │   ├── tests/                 # Automated test suite
-│   │   ├── users.test.js      # User API unit tests (20 tests)
-│   │   ├── integration.test.js # CRUD workflow tests (5 tests)
+│   │   ├── users.test.js      # User API tests (21 tests)
+│   │   ├── integration.test.js # CRUD workflow tests (4 tests)
 │   │   ├── basic.test.js      # Health check tests (3 tests)
-│   │   ├── setup.js           # Jest test configuration
+│   │   ├── setup.js           # Jest configuration
 │   │   ├── testDatabase.js    # Database test utilities
 │   │   └── README.md          # Testing documentation
-│   ├── database.js            # LocalDB connection & config
+│   ├── database-mysql.js      # MySQL connection & fallback
 │   ├── server.js              # Express server setup
-│   ├── setup-db.js            # Database initialization script
-│   ├── jest.config.js         # Jest test framework config
-│   ├── .env.example           # Environment template (safe)
-│   ├── .env                   # Your actual config (not in git)
-│   └── .env.test              # Test environment config
+│   ├── verify-mysql.js        # MySQL verification script
+│   ├── jest.config.js         # Jest test configuration
+│   ├── vercel.json            # Vercel deployment config
+│   ├── .env                   # Environment variables
+│   ├── MYSQL-SETUP.md         # Local MySQL setup guide
+│   ├── PLANETSCALE-SETUP.md   # Cloud MySQL setup guide
+│   └── MIGRATION-CLEANUP.md   # SQL Server → MySQL migration notes
 ├── .github/                    # GitHub Actions CI/CD
 │   └── workflows/
-│       └── ci-cd.yml          # Automated pipeline configuration
+│       └── ci-cd.yml          # Complete pipeline configuration
 ├── public/                     # Static assets
+├── vercel.json                # Frontend Vercel configuration
 └── package.json               # Frontend dependencies
 ```
 
@@ -303,148 +296,176 @@ React-Demo/
 
 ### Users Management
 
-- `GET /api/users` - Get all users
-- `GET /api/users/:id` - Get user by ID
-- `POST /api/users` - Create new user
-- `PUT /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Delete user
+- `GET /api/users` - Get all users with real-time data
+- `GET /api/users/:id` - Get specific user by ID
+- `POST /api/users` - Create new user with validation
+- `PUT /api/users/:id` - Update user with field validation
+- `DELETE /api/users/:id` - Delete user with confirmation
 
 ### System
 
-- `GET /api/health` - Health check endpoint
+- `GET /api/health` - Health check with database status
 
 ### Example API Usage
 
 ```bash
 # Get all users
-curl http://localhost:3001/api/users
+curl https://server-[deployment-id].vercel.app/api/users
 
 # Create a new user
-curl -X POST http://localhost:3001/api/users \
+curl -X POST https://server-[deployment-id].vercel.app/api/users \
   -H "Content-Type: application/json" \
   -d '{"firstName":"John","lastName":"Doe","email":"john@example.com","isActive":true}'
 ```
 
 ## 🔧 Configuration Options
 
-### Database Connection
+### Database Configuration
 
-The app uses **SQL Server LocalDB** with environment-based configuration:
+**Local Development (MySQL):**
 
-- **Connection String**: Configurable via `DB_CONNECTION_STRING` in `.env` file
-- **Default**: `Server=(localdb)\MSSQLLocalDB;Database=React-Demo;Trusted_Connection=yes;Driver={ODBC Driver 17 for SQL Server};`
-- **Authentication**: Windows Authentication (passwordless)
-- **Database**: Configurable via `DB_DATABASE` environment variable
-- **Driver**: msnodesqlv8 with ODBC Driver 17
-
-**Security Benefits:**
-
-- Connection details stored in `.env` (not in source code)
-- Easy to modify for different environments
-- Template provided in `.env.example`
-
-### Fallback Behavior
-
-If database connection fails, the app automatically:
-
-- Starts the server successfully
-- Returns mock data for API calls
-- Displays appropriate messages in the UI
-- Logs connection attempts for debugging
-
-## 🛡️ Security & Privacy
-
-- **Environment Variables**: Database connection strings and sensitive data stored in `.env` (excluded from git)
-- **Template File**: `.env.example` provides structure without exposing secrets
-- **Configurable Connections**: Database connection string can be customized per environment
-- **Windows Authentication**: Secure, passwordless database access
-- **CORS**: Configured for cross-origin requests
-- **Input Validation**: Server-side validation for all API inputs
-
-## 🚀 Deployment
-
-### Frontend (Vercel/Netlify)
-
-```bash
-npm run build
-# Deploy the 'dist' folder
+```env
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DATABASE=react_demo
+MYSQL_PORT=3306
 ```
 
-### Backend (Azure/AWS)
+**Production (Cloud MySQL):**
+
+```env
+MYSQL_HOST=your-database-host.psdb.cloud
+MYSQL_USER=your-username
+MYSQL_PASSWORD=your-password
+MYSQL_DATABASE=react_demo
+MYSQL_PORT=3306
+```
+
+### Intelligent Fallback System
+
+The application uses smart database connectivity:
+
+1. **Primary**: Attempts MySQL connection
+2. **Fallback**: In-memory storage if MySQL unavailable
+3. **Logging**: Clear status messages in console
+4. **Graceful**: Application always starts successfully
+
+## 🛡️ Security & Best Practices
+
+- **Environment Variables**: Database credentials in `.env` (excluded from git)
+- **API Validation**: Server-side input validation and sanitization
+- **CORS Configuration**: Secure cross-origin request handling
+- **Error Handling**: Graceful error responses without sensitive data exposure
+- **Type Safety**: Full TypeScript implementation with strict typing
+- **Test Coverage**: Comprehensive testing prevents regression bugs
+
+## 🚀 Deployment Options
+
+### Automatic Deployment (Recommended)
+
+1. **Push to GitHub** → Automatic deployment via GitHub Actions
+2. **Pull Request** → Automatic staging environment
+3. **Merge to main** → Production deployment
+
+### Manual Deployment
 
 ```bash
+# Deploy frontend
+vercel --prod
+
+# Deploy backend
 cd server
-# Configure environment variables on your platform
-# Deploy with Node.js runtime
+vercel --prod
 ```
+
+### Environment Setup for Production
+
+1. **Vercel Dashboard** → Your projects → Settings → Environment Variables
+2. **Add MySQL variables** for persistent storage
+3. **Redeploy** for changes to take effect
+
+## 🆙 Upgrade Path
+
+### From In-Memory to Persistent Storage
+
+1. **Sign up for PlanetScale** (free tier - 5GB)
+2. **Create database** named `react_demo`
+3. **Add connection variables** to Vercel
+4. **Redeploy** → Automatic persistent storage!
+
+### From Single to Multi-Environment
+
+1. **Create staging environment** in Vercel
+2. **Add staging database** connection
+3. **Configure branch deployments** for feature testing
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Make changes with tests
+4. Commit changes (`git commit -m 'Add amazing feature'`)
+5. Push to branch (`git push origin feature/amazing-feature`)
+6. Open Pull Request → Automatic testing + staging deployment
 
 ## 🆘 Troubleshooting
 
 ### Database Connection Issues
 
-**LocalDB not found:**
+**MySQL not connecting:**
 
 ```bash
-# Check if LocalDB is installed
-sqllocaldb info
-
-# Start LocalDB if needed
-sqllocaldb start MSSQLLocalDB
-```
-
-**ODBC Driver issues:**
-
-- Ensure "ODBC Driver 17 for SQL Server" is installed
-- Download from Microsoft if missing
-- Verify with: `odbcad32.exe` (check System DSN tab)
-
-**Database setup fails:**
-
-```bash
-# Run the setup script with verbose output
+# Verify MySQL is running
 cd server
-node setup-db.js
+node verify-mysql.js
+
+# Start XAMPP MySQL service
+# OR restart MySQL service
 ```
 
-**Connection timeout:**
+**Local development fallback:**
 
-- Check Windows Firewall settings
-- Verify LocalDB is running: `sqllocaldb info MSSQLLocalDB`
-- Try restarting LocalDB: `sqllocaldb stop MSSQLLocalDB && sqllocaldb start MSSQLLocalDB`
+- App automatically uses in-memory storage if MySQL unavailable
+- Check console for "Database status: FALLBACK (In-memory)"
 
-### Frontend Issues
+### Deployment Issues
 
-- Clear browser cache
-- Check console for JavaScript errors
-- Verify API endpoints are accessible
+**GitHub Actions failing:**
 
-### Backend Issues
+- Check Actions tab for detailed error logs
+- Verify all tests pass locally: `cd server && npm test`
+- Ensure frontend builds: `npm run build`
 
-- Check server logs for detailed error messages
-- Verify all npm packages are installed
-- Ensure ports 3001 and 5173 are available
+**Vercel deployment errors:**
+
+- Check Vercel dashboard for build logs
+- Verify environment variables are set
+- Check function timeout limits
+
+### API Issues
+
+**CORS errors:**
+
+- Verify frontend API configuration in `src/config/api.ts`
+- Check that backend URL matches current deployment
+
+**Data not persisting:**
+
+- Expected behavior with in-memory storage
+- Upgrade to cloud MySQL for persistence
 
 ## 📞 Support
 
-If you encounter any issues or have questions:
+For issues or questions:
 
-1. Check the troubleshooting section above
-2. Review server logs for error messages
-3. Verify your `.env` configuration matches `.env.example`
-4. Create an issue in this repository with detailed information
+1. **Check logs**: Console output shows detailed status
+2. **Run verification**: `node server/verify-mysql.js`
+3. **Test locally**: `cd server && npm test`
+4. **Create GitHub issue** with detailed information
 
 ---
 
-**Built with ❤️ using React, Node.js, and SQL Server**
+**🚀 Built with React 19, Node.js, MySQL, and deployed on Vercel**
+
+_Complete CI/CD pipeline from code to production in minutes!_
