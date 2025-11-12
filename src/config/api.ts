@@ -7,11 +7,11 @@ const getApiBaseUrl = () => {
   
   // Test environment (Vercel Preview deployments)
   if (import.meta.env.VITE_ENVIRONMENT === 'test' || window.location.hostname.includes('vercel.app')) {
-    return import.meta.env.VITE_TEST_API_URL || 'https://server-ojzbk2aa2-davids-projects-8b1113d6.vercel.app/api';
+    return import.meta.env.VITE_TEST_API_URL || 'https://fallback-url.example.com/api';
   }
   
   // Production environment
-  return import.meta.env.VITE_PROD_API_URL || 'https://server-ojzbk2aa2-davids-projects-8b1113d6.vercel.app/api';
+  return import.meta.env.VITE_PROD_API_URL || import.meta.env.VITE_TEST_API_URL || 'https://fallback-url.example.com/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
