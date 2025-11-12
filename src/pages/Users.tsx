@@ -92,8 +92,11 @@ export default function Users() {
       // Clear success message after 5 seconds
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (error) {
-      // Error handling is done in updateUser function
+      // Error handling is done in updateUser function, but we should still close modal
       console.error('Failed to update user:', error);
+      setIsEditModalOpen(false);
+      setUserToEdit(null);
+      // Error message is set in updateUser function
     } finally {
       setIsEditingUser(false);
     }
