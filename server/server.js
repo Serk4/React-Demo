@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3001
 // Middleware
 app.use(
 	cors({
-		origin: true, // Allow all origins for now
+		origin: '*', // Explicitly allow all origins
 		credentials: true,
 		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 		allowedHeaders: ['Content-Type', 'Authorization'],
