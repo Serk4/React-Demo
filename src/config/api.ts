@@ -1,6 +1,6 @@
 // API configuration
 const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://server-ksjoph7z2-davids-projects-8b1113d6.vercel.app/api' 
+  ? 'https://server-k2e897uyw-davids-projects-8b1113d6.vercel.app/api' 
   : 'http://localhost:3001/api';
 
 export const apiEndpoints = {
