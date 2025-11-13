@@ -1,6 +1,21 @@
+<div align="center">
+
+![React Demo Banner](./public/banner.png)
+
 # Enterprise CI/CD Pipeline - React Full-Stack Application
 
+[![CI/CD Pipeline](https://github.com/Serk4/React-Demo/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Serk4/React-Demo/actions/workflows/ci-cd.yml)
+[![React](https://img.shields.io/badge/React-19.1.1-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://react-demo-app-stable.vercel.app)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
+
 A professional-grade full-stack web application demonstrating enterprise-level DevOps practices. Built with React 19, TypeScript, Node.js, and MySQL, featuring comprehensive CI/CD pipeline, microservices architecture, and intelligent deployment management with stable URL coordination.
+
+</div>
 
 ## 🚀 Features
 
