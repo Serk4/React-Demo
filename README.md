@@ -15,6 +15,30 @@
 
 A professional-grade full-stack web application demonstrating enterprise-level DevOps practices. Built with React 19, TypeScript, Node.js, and MySQL, featuring comprehensive CI/CD pipeline, microservices architecture, and intelligent deployment management with stable URL coordination.
 
+## 🌐 Live Demo & Environments
+
+### 🏆 **Production Environment** (Stable)
+
+- **🖥️ Frontend**: [https://react-demo-app-stable.vercel.app](https://react-demo-app-stable.vercel.app)
+- **🔗 API**: [https://react-demo-api-stable.vercel.app/api](https://react-demo-api-stable.vercel.app/api)
+- **📊 Health Check**: [https://react-demo-api-stable.vercel.app/api/health](https://react-demo-api-stable.vercel.app/api/health)
+
+### 🧪 **Preview Environment** (Latest Changes)
+
+- **🔄 Auto-deployed** on every commit to `main`
+- **📋 Testing URLs** provided in [GitHub Actions](https://github.com/Serk4/React-Demo/actions) logs
+- **🎯 Manual promotion** to production after testing
+
+### 🚀 **DevOps Pipeline Showcase**
+
+```
+📝 Code Push → 🧪 Tests → 🔄 Preview → 👤 Manual Testing → 🏆 Production
+```
+
+- **Automated**: Testing, security checks, preview deployment
+- **Manual**: Quality gate before production promotion
+- **Enterprise**: Proper staging → production workflow
+
 </div>
 
 ## 🚀 Features
