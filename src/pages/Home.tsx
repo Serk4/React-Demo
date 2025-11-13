@@ -1,36 +1,73 @@
-import { useState } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Link } from 'react-router-dom'
 
 export default function Home() {
-  const [count, setCount] = useState(0)
-
   return (
     <div className="home-page">
-      <div>
-        <a href="https://vite.dev" target="_blank" rel="noopener">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noopener">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+      <div className="hero-section">
+        <h1>Enterprise CI/CD Pipeline</h1>
+        <p className="hero-subtitle">
+          Professional React Full-Stack Application demonstrating enterprise DevOps practices
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      
-      <div className="welcome-section">
-        <h2>Welcome to React Demo</h2>
-        <p>This is the home page. Use the navigation menu above to explore different sections.</p>
+
+      <div className="deployment-info">
+        <h3>🌐 Deployment Architecture</h3>
+        <p>
+          This application demonstrates professional Preview → Production workflow. 
+          Every code change triggers automated testing and preview deployment, 
+          followed by manual promotion to production after quality verification.
+        </p>
+      </div>
+
+      <div className="features-grid">
+        <div className="feature-card">
+          <h3>🚀 CI/CD Pipeline</h3>
+          <p>Automated testing, security scanning, and dual deployment with Preview → Production workflow</p>
+        </div>
+        
+        <div className="feature-card">
+          <h3>🏗️ Microservices</h3>
+          <p>Independent frontend and backend deployments with stable URL coordination</p>
+        </div>
+        
+        <div className="feature-card">
+          <h3>🧪 Testing Suite</h3>
+          <p>28 comprehensive API tests covering CRUD operations and integration scenarios</p>
+        </div>
+        
+        <div className="feature-card">
+          <h3>🗄️ Database Migration</h3>
+          <p>Professional SQL Server → MySQL migration with smart fallback system</p>
+        </div>
+      </div>
+
+      <div className="tech-stack">
+        <h2>Technology Stack</h2>
+        <div className="tech-badges">
+          <span className="tech-badge react">React 19</span>
+          <span className="tech-badge typescript">TypeScript</span>
+          <span className="tech-badge nodejs">Node.js</span>
+          <span className="tech-badge mysql">MySQL</span>
+          <span className="tech-badge vite">Vite</span>
+          <span className="tech-badge vercel">Vercel</span>
+        </div>
+      </div>
+
+      <div className="cta-section">
+        <h2>Explore the Application</h2>
+        <div className="cta-buttons">
+          <Link to="/users" className="btn-primary">
+            View User Management
+          </Link>
+          <a 
+            href="https://github.com/Serk4/React-Demo" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="btn-secondary"
+          >
+            💻 View Source Code
+          </a>
+        </div>
       </div>
     </div>
   );
