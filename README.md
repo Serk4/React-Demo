@@ -1,8 +1,8 @@
+# Enterprise CI/CD Pipeline - React Full-Stack Application
+
 <div align="center">
 
 ![React Demo Banner](./public/banner.png)
-
-# Enterprise CI/CD Pipeline - React Full-Stack Application
 
 [![CI/CD Pipeline](https://github.com/Serk4/React-Demo/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Serk4/React-Demo/actions/workflows/ci-cd.yml)
 [![React](https://img.shields.io/badge/React-19.1.1-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
