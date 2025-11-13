@@ -136,6 +136,7 @@ jobs:
       - name: Deploy Backend to Preview Environment
         uses: amondnet/vercel-action@v25
         id: deploy-backend-preview
+        continue-on-error: false
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -146,6 +147,7 @@ jobs:
       - name: Deploy Frontend to Preview Environment
         uses: amondnet/vercel-action@v25
         id: deploy-frontend-preview
+        continue-on-error: false
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -177,7 +179,7 @@ jobs:
           echo "1. 🧪 Test all user management features"
           echo "2. 🔄 Verify CRUD operations work correctly"
           echo "3. 📊 Check user statistics display properly"
-          echo "4. � Confirm frontend-backend communication"
+          echo "4. 🔗 Confirm frontend-backend communication"
           echo "5. 📱 Test responsive design on mobile"
           echo ""
           echo "✨ After Testing Passes:"
@@ -185,9 +187,3 @@ jobs:
           echo "⚠️  Type 'DEPLOY' to confirm production deployment"
           echo ""
           echo "🎉 This implements proper Preview → Production workflow!"
-
-  deploy-production:
-    runs-on: ubuntu-latest
-    # This job is now handled by the separate deploy-production.yml workflow
-    # Manual production deployment should use the "Deploy to Production" workflow
-    if: false # Disabled - use separate production deployment workflow
