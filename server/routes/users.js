@@ -305,7 +305,15 @@ router.delete('/:id', async (req, res) => {
 			console.log(
 				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/10 remaining)`
 			)
-			return res.json({ message: 'User deleted successfully' })
+			return res.json({
+				message: 'User deleted successfully',
+				remainingUsers: users.length,
+				maxAllowed: 10,
+				note:
+					users.length === 0
+						? 'All users deleted - 5 default users will reset at midnight'
+						: null,
+			})
 		}
 
 		const pool = getPool()
