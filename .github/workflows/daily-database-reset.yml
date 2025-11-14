@@ -15,7 +15,8 @@ jobs:
       - name: Reset Preview Database
         run: |
           echo "🔄 Resetting Preview database..."
-          curl -X POST "https://react-demo-preview.vercel.app/api/admin/reset" \
+          # Try the main preview branch URL
+          curl -X POST "https://react-demo-git-main-serk4s-projects.vercel.app/api/admin/reset" \
             -H "Content-Type: application/json" \
             -f || echo "❌ Preview reset failed (database may be in memory mode)"
 
