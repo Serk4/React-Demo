@@ -150,6 +150,16 @@ router.post('/', async (req, res) => {
 		}
 
 		if (!isConnected()) {
+			// Check 5-user limit for in-memory storage
+			if (users.length >= 5) {
+				return res.status(400).json({
+					error:
+						'Maximum of 5 users allowed. Database resets daily at midnight.',
+					currentCount: users.length,
+					maxAllowed: 5,
+				})
+			}
+
 			const newUser = {
 				id: nextId++,
 				name: `${firstName} ${lastName}`,
@@ -158,11 +168,30 @@ router.post('/', async (req, res) => {
 				status: isActive ? 'active' : 'inactive',
 			}
 			users.push(newUser)
-			console.log(`✅ Created new user in memory: ${newUser.name}`)
+			console.log(
+				`✅ Created new user in memory: ${newUser.name} (${users.length}/5)`
+			)
 			return res.status(201).json(newUser)
 		}
 
 		const pool = getPool()
+
+		// Check current user count before inserting
+		const [countResult] = await pool.execute(
+			'SELECT COUNT(*) as count FROM users'
+		)
+		const currentCount = countResult[0].count
+
+		if (currentCount >= 5) {
+			console.log(`🚫 User creation blocked: ${currentCount}/5 users exist`)
+			return res.status(400).json({
+				error: 'Maximum of 5 users allowed. Database resets daily at midnight.',
+				currentCount: currentCount,
+				maxAllowed: 5,
+				resetInfo: 'Database automatically resets to default users every day',
+			})
+		}
+
 		const [result] = await pool.execute(
 			`
 			INSERT INTO users (first_name, last_name, email, is_active)
@@ -179,7 +208,9 @@ router.post('/', async (req, res) => {
 			status: isActive ? 'active' : 'inactive',
 		}
 
-		console.log(`✅ Created new user in MySQL: ${newUser.name}`)
+		console.log(
+			`✅ Created new user in MySQL: ${newUser.name} (${currentCount + 1}/5)`
+		)
 		res.status(201).json(newUser)
 	} catch (error) {
 		console.error('Error creating user:', error)
@@ -266,7 +297,9 @@ router.delete('/:id', async (req, res) => {
 			}
 
 			const deletedUser = users.splice(userIndex, 1)[0]
-			console.log(`✅ Deleted user from memory: ${deletedUser.name}`)
+			console.log(
+				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/5 remaining)`
+			)
 			return res.json({ message: 'User deleted successfully' })
 		}
 
@@ -283,11 +316,79 @@ router.delete('/:id', async (req, res) => {
 			return res.status(404).json({ error: 'User not found' })
 		}
 
-		console.log(`✅ Deleted user from MySQL: ID ${id}`)
-		res.json({ message: 'User deleted successfully' })
+		// Get updated count after deletion
+		const [countResult] = await pool.execute(
+			'SELECT COUNT(*) as count FROM users'
+		)
+		const remainingCount = countResult[0].count
+
+		console.log(
+			`✅ Deleted user from MySQL: ID ${id} (${remainingCount}/5 remaining)`
+		)
+		res.json({
+			message: 'User deleted successfully',
+			remainingUsers: remainingCount,
+			maxAllowed: 5,
+			note:
+				remainingCount === 0
+					? 'All users deleted - database will reset at midnight'
+					: null,
+		})
 	} catch (error) {
 		console.error('Error deleting user:', error)
 		res.status(500).json({ error: 'Failed to delete user' })
+	}
+})
+
+// GET /api/users/admin/status - Get database status and limits
+router.get('/admin/status', async (req, res) => {
+	try {
+		let currentCount = 0
+		let storageType = 'memory'
+
+		if (!isConnected()) {
+			currentCount = users.length
+			storageType = 'memory'
+		} else {
+			const pool = getPool()
+			const [countResult] = await pool.execute(
+				'SELECT COUNT(*) as count FROM users'
+			)
+			currentCount = countResult[0].count
+			storageType = 'mysql'
+		}
+
+		res.json({
+			storageType,
+			currentUsers: currentCount,
+			maxUsers: 5,
+			usersRemaining: Math.max(0, 5 - currentCount),
+			isAtLimit: currentCount >= 5,
+			resetSchedule: 'Daily at midnight UTC',
+			lastResetInfo: 'Database automatically resets to 5 default users',
+		})
+	} catch (error) {
+		console.error('Error getting status:', error)
+		res.status(500).json({ error: 'Failed to get status' })
+	}
+})
+
+// POST /api/users/admin/reset - Manual database reset (for testing)
+router.post('/admin/reset', async (req, res) => {
+	try {
+		const { resetDatabase, DEFAULT_USERS } = require('../scripts/daily-reset')
+
+		console.log('🔄 Manual database reset triggered...')
+		const result = await resetDatabase()
+
+		res.json({
+			message: 'Database reset successfully',
+			usersRestored: result.usersRestored,
+			resetTime: result.resetTime,
+		})
+	} catch (error) {
+		console.error('Error during manual reset:', error)
+		res.status(500).json({ error: 'Failed to reset database' })
 	}
 })
 
