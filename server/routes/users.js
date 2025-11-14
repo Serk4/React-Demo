@@ -150,13 +150,15 @@ router.post('/', async (req, res) => {
 		}
 
 		if (!isConnected()) {
-			// Check 5-user limit for in-memory storage
-			if (users.length >= 5) {
+			// Check 10-user limit for in-memory storage
+			if (users.length >= 10) {
 				return res.status(400).json({
 					error:
-						'Maximum of 5 users allowed. Database resets daily at midnight.',
+						'Maximum of 10 users allowed. 5 default users reset daily at midnight.',
 					currentCount: users.length,
-					maxAllowed: 5,
+					maxAllowed: 10,
+					defaultUsers: 5,
+					additionalAllowed: 5,
 				})
 			}
 
@@ -169,7 +171,7 @@ router.post('/', async (req, res) => {
 			}
 			users.push(newUser)
 			console.log(
-				`✅ Created new user in memory: ${newUser.name} (${users.length}/5)`
+				`✅ Created new user in memory: ${newUser.name} (${users.length}/10)`
 			)
 			return res.status(201).json(newUser)
 		}
@@ -182,13 +184,16 @@ router.post('/', async (req, res) => {
 		)
 		const currentCount = countResult[0].count
 
-		if (currentCount >= 5) {
-			console.log(`🚫 User creation blocked: ${currentCount}/5 users exist`)
+		if (currentCount >= 10) {
+			console.log(`🚫 User creation blocked: ${currentCount}/10 users exist`)
 			return res.status(400).json({
-				error: 'Maximum of 5 users allowed. Database resets daily at midnight.',
+				error:
+					'Maximum of 10 users allowed. 5 default users reset daily at midnight.',
 				currentCount: currentCount,
-				maxAllowed: 5,
-				resetInfo: 'Database automatically resets to default users every day',
+				maxAllowed: 10,
+				defaultUsers: 5,
+				additionalAllowed: 5,
+				resetInfo: '5 default users automatically reset every day',
 			})
 		}
 
@@ -209,7 +214,7 @@ router.post('/', async (req, res) => {
 		}
 
 		console.log(
-			`✅ Created new user in MySQL: ${newUser.name} (${currentCount + 1}/5)`
+			`✅ Created new user in MySQL: ${newUser.name} (${currentCount + 1}/10)`
 		)
 		res.status(201).json(newUser)
 	} catch (error) {
@@ -298,7 +303,7 @@ router.delete('/:id', async (req, res) => {
 
 			const deletedUser = users.splice(userIndex, 1)[0]
 			console.log(
-				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/5 remaining)`
+				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/10 remaining)`
 			)
 			return res.json({ message: 'User deleted successfully' })
 		}
@@ -323,15 +328,15 @@ router.delete('/:id', async (req, res) => {
 		const remainingCount = countResult[0].count
 
 		console.log(
-			`✅ Deleted user from MySQL: ID ${id} (${remainingCount}/5 remaining)`
+			`✅ Deleted user from MySQL: ID ${id} (${remainingCount}/10 remaining)`
 		)
 		res.json({
 			message: 'User deleted successfully',
 			remainingUsers: remainingCount,
-			maxAllowed: 5,
+			maxAllowed: 10,
 			note:
 				remainingCount === 0
-					? 'All users deleted - database will reset at midnight'
+					? 'All users deleted - 5 default users will reset at midnight'
 					: null,
 		})
 	} catch (error) {
@@ -361,11 +366,14 @@ router.get('/admin/status', async (req, res) => {
 		res.json({
 			storageType,
 			currentUsers: currentCount,
-			maxUsers: 5,
-			usersRemaining: Math.max(0, 5 - currentCount),
-			isAtLimit: currentCount >= 5,
+			maxUsers: 10,
+			defaultUsers: 5,
+			additionalAllowed: 5,
+			usersRemaining: Math.max(0, 10 - currentCount),
+			isAtLimit: currentCount >= 10,
 			resetSchedule: 'Daily at midnight UTC',
-			lastResetInfo: 'Database automatically resets to 5 default users',
+			lastResetInfo:
+				'5 default users automatically reset, up to 5 additional users allowed (10 max total)',
 		})
 	} catch (error) {
 		console.error('Error getting status:', error)

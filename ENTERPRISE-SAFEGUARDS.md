@@ -17,6 +17,22 @@ deploy-preview:
   needs: [test, lint, security] # ← All gates must pass first
 ```
 
+### ✅ **Database Protection Against Griefing:**
+
+1. **User Limit Enforcement**: Maximum 10 users total (5 default + 5 additional)
+2. **Daily Reset**: 5 default users automatically restored every midnight
+3. **Admin Endpoints**: Status monitoring and manual reset capabilities
+4. **Unlimited Edits**: Existing users can be updated without restrictions
+5. **Safe Deletion**: Users can be deleted, but defaults reset nightly
+
+```
+Demo Logic:
+├── 5 Default Users (Alice, Bob, Carol, David, Eve)
+├── +5 Additional Users (can be added by demo visitors)
+├── = 10 Maximum Total Users
+└── Daily Reset: Restores the 5 defaults, keeps demo clean
+```
+
 ## 🛡️ **Enterprise Best Practices to Implement**
 
 ### **1. GitHub Repository Rules (New UI)**

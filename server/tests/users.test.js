@@ -81,8 +81,8 @@ describe('Users API', () => {
 			} else if (response.status === 400) {
 				// User limit enforcement - this is the expected behavior!
 				expect(response.body).toHaveProperty('error')
-				expect(response.body.error).toContain('Maximum of 5 users allowed')
-				console.log('✅ 5-user limit is being enforced correctly')
+				expect(response.body.error).toContain('Maximum of 10 users allowed')
+				console.log('✅ 10-user limit is being enforced correctly')
 			} else {
 				// Mock mode - API falls back but may return 500
 				console.log('API running in mock mode for POST')
@@ -179,8 +179,8 @@ describe('Users API', () => {
 			} else if (response.status === 400) {
 				// User limit enforcement - this is expected!
 				expect(response.body).toHaveProperty('error')
-				expect(response.body.error).toContain('Maximum of 5 users allowed')
-				console.log('✅ 5-user limit is being enforced correctly')
+				expect(response.body.error).toContain('Maximum of 10 users allowed')
+				console.log('✅ 10-user limit is being enforced correctly')
 			} else {
 				console.log('API running in mock mode for default status test')
 			}
@@ -432,13 +432,17 @@ describe('Users API', () => {
 			expect(response.body).toHaveProperty('storageType')
 			expect(response.body).toHaveProperty('currentUsers')
 			expect(response.body).toHaveProperty('maxUsers')
-			expect(response.body.maxUsers).toBe(5)
+			expect(response.body.maxUsers).toBe(10)
+			expect(response.body).toHaveProperty('defaultUsers')
+			expect(response.body.defaultUsers).toBe(5)
+			expect(response.body).toHaveProperty('additionalAllowed')
+			expect(response.body.additionalAllowed).toBe(5)
 			expect(response.body).toHaveProperty('usersRemaining')
 			expect(response.body).toHaveProperty('isAtLimit')
 			expect(response.body).toHaveProperty('resetSchedule')
 		})
 
-		it('should enforce 5-user limit for new user creation', async () => {
+		it('should enforce 10-user limit for new user creation', async () => {
 			// First, get current status to understand the starting point
 			const statusResponse = await request(app).get('/api/users/admin/status')
 			const initialCount = statusResponse.body.currentUsers
@@ -446,7 +450,7 @@ describe('Users API', () => {
 			console.log(`Starting with ${initialCount} users`)
 
 			// If we're already at the limit, test should verify rejection
-			if (initialCount >= 5) {
+			if (initialCount >= 10) {
 				const newUser = {
 					firstName: 'Blocked',
 					lastName: 'User',
@@ -458,15 +462,15 @@ describe('Users API', () => {
 
 				expect(response.status).toBe(400)
 				expect(response.body).toHaveProperty('error')
-				expect(response.body.error).toContain('Maximum of 5 users allowed')
+				expect(response.body.error).toContain('Maximum of 10 users allowed')
 				expect(response.body).toHaveProperty('currentCount')
 				expect(response.body).toHaveProperty('maxAllowed')
-				expect(response.body.maxAllowed).toBe(5)
+				expect(response.body.maxAllowed).toBe(10)
 			} else {
 				// If we're under the limit, we could try to create users up to the limit
 				// But this is complex to test reliably, so we'll just log that we're under limit
 				console.log(
-					'System is under the 5-user limit, testing limit enforcement in other scenarios'
+					'System is under the 10-user limit, testing limit enforcement in other scenarios'
 				)
 			}
 		})
@@ -491,7 +495,7 @@ describe('Users API', () => {
 						expect(deleteResponse.body).toHaveProperty('message')
 						expect(deleteResponse.body).toHaveProperty('remainingUsers')
 						expect(deleteResponse.body).toHaveProperty('maxAllowed')
-						expect(deleteResponse.body.maxAllowed).toBe(5)
+						expect(deleteResponse.body.maxAllowed).toBe(10)
 
 						if (deleteResponse.body.remainingUsers === 0) {
 							expect(deleteResponse.body).toHaveProperty('note')
@@ -527,12 +531,12 @@ describe('Users API', () => {
 		it('should verify protection against griefing attempts', async () => {
 			const statusResponse = await request(app).get('/api/users/admin/status')
 
-			expect(statusResponse.body.maxUsers).toBe(5)
+			expect(statusResponse.body.maxUsers).toBe(10)
+			expect(statusResponse.body.defaultUsers).toBe(5)
+			expect(statusResponse.body.additionalAllowed).toBe(5)
 			expect(statusResponse.body.resetSchedule).toBe('Daily at midnight UTC')
 			expect(statusResponse.body).toHaveProperty('lastResetInfo')
-			expect(statusResponse.body.lastResetInfo).toContain(
-				'automatically resets'
-			)
+			expect(statusResponse.body.lastResetInfo).toContain('automatically reset')
 		})
 	})
 })

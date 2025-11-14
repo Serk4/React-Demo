@@ -94,14 +94,14 @@ describe('API Integration Tests', () => {
 				// User limit enforcement - this is expected behavior!
 				expect(createResponse.body).toHaveProperty('error')
 				expect(createResponse.body.error).toContain(
-					'Maximum of 5 users allowed'
+					'Maximum of 10 users allowed'
 				)
-				console.log('✅ Integration test confirms 5-user limit is enforced')
+				console.log('✅ Integration test confirms 10-user limit is enforced')
 
 				// Verify we can still read users
 				const readResponse = await request(app).get('/api/users').expect(200)
 				expect(Array.isArray(readResponse.body)).toBe(true)
-				expect(readResponse.body.length).toBeLessThanOrEqual(5)
+				expect(readResponse.body.length).toBeLessThanOrEqual(10)
 			} else if (createResponse.status === 500) {
 				// Mock mode - just verify API is responding
 				console.log('API running in mock mode for integration test')
