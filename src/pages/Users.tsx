@@ -194,7 +194,7 @@ export default function Users() {
     <div className="users-page">
       <div className="page-header">
         <h1>Users Management</h1>
-        <p>Manage your application users from SQL Server database.</p>
+        <p>Manage your application users from a MySQL database.</p>
         {error && <div className="error-message">{error}</div>}
         {successMessage && <div className="success-message">{successMessage}</div>}
       </div>

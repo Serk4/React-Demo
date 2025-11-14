@@ -74,9 +74,9 @@ The project includes a comprehensive CI/CD pipeline (`.github/workflows/ci-cd.ym
 
 Tests run on:
 
-- **OS**: Windows (for LocalDB compatibility)
+- **OS**: Windows (for cross-platform testing)
 - **Node.js**: 18.x and 20.x
-- **Database**: SQL Server LocalDB
+- **Database**: MySQL (with in-memory fallback)
 
 ## Database Testing
 
