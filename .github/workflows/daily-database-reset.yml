@@ -16,7 +16,7 @@ jobs:
         run: |
           echo "🔄 Resetting Preview database..."
           # Try the preview URL with proper error handling
-          RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" -X POST "https://react-demo-preview.vercel.app/api/admin/reset" \
+          RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" -X POST "https://react-demo-preview.vercel.app/api/users/admin/reset" \
             -H "Content-Type: application/json")
           HTTP_CODE=$(echo $RESPONSE | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
           BODY=$(echo $RESPONSE | sed -e 's/HTTPSTATUS\:.*//g')
@@ -39,15 +39,15 @@ jobs:
         run: |
           echo "🔄 Resetting Production database..."
           echo "💡 Note: Production API backend needs to be deployed as separate Vercel project"
-          
+
           # Try possible production API URLs
           PRODUCTION_URLS=(
-            "https://react-demo-server.vercel.app/api/admin/reset"
-            "https://react-demo-api.vercel.app/api/admin/reset"
+            "https://server-ljy4cbion-davids-projects-8b1113d6.vercel.app/api/users/admin/reset"
+            "https://react-demo-server.vercel.app/api/users/admin/reset"
           )
-          
+
           RESET_SUCCESS=false
-          
+
           for URL in "${PRODUCTION_URLS[@]}"; do
             echo "🌐 Trying: $URL"
             
@@ -73,7 +73,7 @@ jobs:
               echo "   Failed with HTTP $HTTP_CODE"
             fi
           done
-          
+
           if [ "$RESET_SUCCESS" = false ]; then
             echo "⚠️ Production API backend not found at expected URLs"
             echo "🔧 To enable production resets, deploy server/ folder to Vercel separately"
