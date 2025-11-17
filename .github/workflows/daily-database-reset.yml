@@ -15,8 +15,8 @@ jobs:
       - name: Reset Preview Database
         run: |
           echo "🔄 Resetting Preview database..."
-          # Try the main preview branch URL with proper error handling
-          RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" -X POST "https://react-demo-git-main-serk4s-projects.vercel.app/api/admin/reset" \
+          # Try the preview URL with proper error handling
+          RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" -X POST "https://react-demo-preview.vercel.app/api/admin/reset" \
             -H "Content-Type: application/json")
           HTTP_CODE=$(echo $RESPONSE | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
           BODY=$(echo $RESPONSE | sed -e 's/HTTPSTATUS\:.*//g')
