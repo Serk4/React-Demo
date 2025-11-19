@@ -9,7 +9,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "db:reset": "node scripts/daily-reset.js",
+    "db:reset": "node scripts/unified-database-reset.js all --verbose",
+    "db:reset:local": "node scripts/daily-reset.js",
     "db:reset:preview": "node scripts/unified-database-reset.js preview --verbose",
     "db:reset:production": "node scripts/unified-database-reset.js production --verbose",
     "db:reset:all": "node scripts/unified-database-reset.js all --verbose"
