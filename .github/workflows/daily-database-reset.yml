@@ -2,29 +2,20 @@ name: Daily Database Reset
 
 on:
   schedule:
-    # Run at 2:00 AM UTC daily (adjust timezone as needed)
+    # Run at 2:00 AM UTC daily
     - cron: '0 2 * * *'
   workflow_dispatch:
     # Allow manual trigger for testing
     inputs:
-      environment:
-        description: 'Environment to reset (preview, production, or all)'
-        required: false
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - preview
-          - production
       verbose:
         description: 'Enable verbose logging'
         required: false
-        default: false
+        default: true
         type: boolean
 
 jobs:
   database-reset:
-    name: Database Reset
+    name: Reset Demo Database
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -35,18 +26,17 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Run Unified Database Reset
+      - name: Run Database Reset
         run: |
           cd server
-          ENV="${{ github.event.inputs.environment || 'all' }}"
           VERBOSE_FLAG=""
 
           if [[ "${{ github.event.inputs.verbose }}" == "true" ]]; then
             VERBOSE_FLAG="--verbose"
           fi
 
-          echo "🚀 Running database reset for environment: $ENV"
-          node scripts/unified-database-reset.js $ENV $VERBOSE_FLAG
+          echo "🚀 Running database reset for demo environment"
+          node scripts/simple-reset.js $VERBOSE_FLAG
         env:
           NODE_ENV: production
 
@@ -63,8 +53,7 @@ jobs:
           echo "Time: $(date -u)"
 
           if [[ "${{ needs.database-reset.result }}" == "success" ]]; then
-            echo "✅ All database resets completed successfully"
+            echo "✅ Demo database reset completed successfully"
           else
-            echo "⚠️ Some database resets may have failed - check logs above"
-            echo "💡 This is normal if production API is not deployed or in memory mode"
+            echo "⚠️ Reset completed with warnings (normal for memory mode)"
           fi

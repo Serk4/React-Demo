@@ -1,19 +1,10 @@
-name: Enterprise CI/CD Pipeline
+name: Simplified CI/CD Pipeline
 
 on:
   push:
     branches: [main, develop, feature/*]
   pull_request:
     branches: [main, develop]
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deploy to Production'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-          - production
 
 jobs:
   test:
@@ -77,7 +68,6 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-        # Remove continue-on-error: Lint failures should block deployment
 
   security:
     runs-on: ubuntu-latest
@@ -103,14 +93,10 @@ jobs:
           cd server && npm audit --audit-level moderate || true
         continue-on-error: true
 
-  deploy-preview:
+  deploy:
     needs: [test, lint, security]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    outputs:
-      backend-preview-url: ${{ steps.deploy-backend-preview.outputs.preview-url }}
-      frontend-preview-url: ${{ steps.deploy-frontend-preview.outputs.preview-url }}
 
     steps:
       - name: Checkout code
@@ -133,57 +119,26 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Deploy Backend to Preview Environment
+      - name: Deploy Unified App to Vercel
         uses: amondnet/vercel-action@v25
-        id: deploy-backend-preview
-        continue-on-error: false
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
-          working-directory: './server'
-          # No --prod flag = Preview deployment
-
-      - name: Deploy Frontend to Preview Environment
-        uses: amondnet/vercel-action@v25
-        id: deploy-frontend-preview
-        continue-on-error: false
+        id: deploy-app
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          # No --prod flag = Preview deployment
+          vercel-args: '--prod'
 
-      - name: Update Preview Environment Variables
+      - name: Deployment Complete
         run: |
-          echo "🔧 Configuring Preview environment..."
-          # Frontend should use the preview backend URL
-          echo "Backend Preview URL: ${{ steps.deploy-backend-preview.outputs.preview-url }}"
-          echo "Frontend Preview URL: ${{ steps.deploy-frontend-preview.outputs.preview-url }}"
-
-      - name: Preview Environment Ready
-        run: |
-          echo "🧪 PREVIEW ENVIRONMENT DEPLOYED SUCCESSFULLY!"
+          echo "🚀 SIMPLIFIED DEPLOYMENT SUCCESSFUL!"
           echo ""
-          echo "📋 Preview URLs for Testing:"
-          echo "🖥️  Frontend: ${{ steps.deploy-frontend-preview.outputs.preview-url }}"
-          echo "🔗 Backend:  ${{ steps.deploy-backend-preview.outputs.preview-url }}/api"
+          echo "🌐 Live Demo URL: ${{ steps.deploy-app.outputs.preview-url }}"
+          echo "🎯 Production URL: https://react-demo.vercel.app"
           echo ""
           echo "✅ Automated Testing Results:"
-          echo "   • 28 API tests passed"
+          echo "   • API tests passed"
           echo "   • Security audit completed"
           echo "   • Frontend build successful"
           echo "   • ESLint checks completed"
           echo ""
-          echo "🎯 MANUAL TESTING REQUIRED:"
-          echo "1. 🧪 Test all user management features"
-          echo "2. 🔄 Verify CRUD operations work correctly"
-          echo "3. 📊 Check user statistics display properly"
-          echo "4. 🔗 Confirm frontend-backend communication"
-          echo "5. 📱 Test responsive design on mobile"
-          echo ""
-          echo "✨ After Testing Passes:"
-          echo "📋 Go to: Actions → 'Deploy to Production' → Run workflow"
-          echo "⚠️  Type 'DEPLOY' to confirm production deployment"
-          echo ""
-          echo "🎉 This implements proper Preview → Production workflow!"
+          echo "� Single environment, no complexity!"
