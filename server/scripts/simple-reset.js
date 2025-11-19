@@ -28,7 +28,7 @@ class SimpleReset {
 			apiUrl = `${baseUrl}/api/users/admin/reset`
 		} else {
 			// Auto-detect: if we're running locally, target the deployed app
-			apiUrl = 'https://react-demo.vercel.app/api/users/admin/reset'
+			apiUrl = 'https://react-demo-virid-six.vercel.app/api/users/admin/reset'
 		}
 
 		this.log(`🌐 Targeting: ${apiUrl}`, '🌐')
