@@ -153,12 +153,20 @@ router.post('/', async (req, res) => {
 			// Check 10-user limit for in-memory storage
 			if (users.length >= 10) {
 				return res.status(400).json({
-					error:
-						'Maximum of 10 users allowed. 5 default users reset daily at midnight.',
+					error: 'Demo limit reached! 📊',
+					message: 'This demo app has a 10-user limit to prevent overuse.',
 					currentCount: users.length,
 					maxAllowed: 10,
-					defaultUsers: 5,
-					additionalAllowed: 5,
+					howToContinue: {
+						option1: 'Delete an existing user to test the Create feature',
+						option2: 'Use the Reset button to restore default users',
+						note: 'Data resets automatically on new deployments',
+					},
+					tips: [
+						'💡 Try editing or deleting existing users',
+						'🔄 Use the reset feature for a clean slate',
+						'👥 This data is shared with all demo visitors',
+					],
 				})
 			}
 
@@ -173,7 +181,21 @@ router.post('/', async (req, res) => {
 			console.log(
 				`✅ Created new user in memory: ${newUser.name} (${users.length}/10)`
 			)
-			return res.status(201).json(newUser)
+
+			// Add helpful context when approaching limit
+			const responseData = { ...newUser }
+			if (users.length >= 8) {
+				responseData.demoInfo = {
+					remaining: 10 - users.length,
+					message:
+						users.length >= 10
+							? '🎯 Demo limit reached! Try delete/edit features'
+							: `⚠️ ${10 - users.length} users remaining in demo`,
+					tip: 'This is a shared demo - all visitors see the same data',
+				}
+			}
+
+			return res.status(201).json(responseData)
 		}
 
 		const pool = getPool()
@@ -187,13 +209,20 @@ router.post('/', async (req, res) => {
 		if (currentCount >= 10) {
 			console.log(`🚫 User creation blocked: ${currentCount}/10 users exist`)
 			return res.status(400).json({
-				error:
-					'Maximum of 10 users allowed. 5 default users reset daily at midnight.',
+				error: 'Demo limit reached! 📊',
+				message: 'This demo app has a 10-user limit to prevent overuse.',
 				currentCount: currentCount,
 				maxAllowed: 10,
-				defaultUsers: 5,
-				additionalAllowed: 5,
-				resetInfo: '5 default users automatically reset every day',
+				howToContinue: {
+					option1: 'Delete an existing user to test the Create feature',
+					option2: 'Use the Reset button to restore default users',
+					note: 'Data resets automatically on new deployments',
+				},
+				tips: [
+					'💡 Try editing or deleting existing users',
+					'🔄 Use the reset feature for a clean slate',
+					'👥 This data is shared with all demo visitors',
+				],
 			})
 		}
 
@@ -216,7 +245,22 @@ router.post('/', async (req, res) => {
 		console.log(
 			`✅ Created new user in MySQL: ${newUser.name} (${currentCount + 1}/10)`
 		)
-		res.status(201).json(newUser)
+
+		// Add helpful context when approaching limit
+		const responseData = { ...newUser }
+		const newCount = currentCount + 1
+		if (newCount >= 8) {
+			responseData.demoInfo = {
+				remaining: 10 - newCount,
+				message:
+					newCount >= 10
+						? '🎯 Demo limit reached! Try delete/edit features'
+						: `⚠️ ${10 - newCount} users remaining in demo`,
+				tip: 'This is a shared demo - all visitors see the same data',
+			}
+		}
+
+		res.status(201).json(responseData)
 	} catch (error) {
 		console.error('Error creating user:', error)
 		res.status(500).json({ error: 'Failed to create user' })
@@ -379,9 +423,29 @@ router.get('/admin/status', async (req, res) => {
 			additionalAllowed: 5,
 			usersRemaining: Math.max(0, 10 - currentCount),
 			isAtLimit: currentCount >= 10,
-			resetSchedule: 'Daily at midnight UTC',
-			lastResetInfo:
-				'5 default users automatically reset, up to 5 additional users allowed (10 max total)',
+			isNearLimit: currentCount >= 8,
+			resetSchedule: 'On new deployments',
+			status: {
+				message:
+					currentCount >= 10
+						? '🚫 Demo limit reached!'
+						: currentCount >= 8
+						? `⚠️ Approaching limit (${currentCount}/10)`
+						: `✅ ${10 - currentCount} users remaining`,
+				canCreateUsers: currentCount < 10,
+				suggestion:
+					currentCount >= 10
+						? 'Delete a user or use Reset to continue testing'
+						: currentCount >= 8
+						? 'Consider testing delete/edit features soon'
+						: 'Feel free to create more test users',
+			},
+			demoInfo: {
+				purpose: 'CI/CD Pipeline Demonstration',
+				sharedData: 'All visitors see the same data',
+				autoReset: 'Data resets on new deployments',
+				features: ['Create', 'Read', 'Update', 'Delete', 'Reset'],
+			},
 		})
 	} catch (error) {
 		console.error('Error getting status:', error)
@@ -389,22 +453,62 @@ router.get('/admin/status', async (req, res) => {
 	}
 })
 
-// POST /api/users/admin/reset - Manual database reset (for testing)
+// POST /api/users/admin/reset - Manual database reset (for demo purposes)
 router.post('/admin/reset', async (req, res) => {
 	try {
-		const { resetDatabase, DEFAULT_USERS } = require('../scripts/daily-reset')
+		console.log('🔄 Demo reset triggered - restoring default users...')
 
-		console.log('🔄 Manual database reset triggered...')
-		const result = await resetDatabase()
+		// Reset in-memory storage to defaults (perfect for demos!)
+		users = [
+			{
+				id: 1,
+				name: 'Alice Johnson',
+				email: 'alice.johnson@example.com',
+				role: 'User',
+				status: 'active',
+			},
+			{
+				id: 2,
+				name: 'Bob Smith',
+				email: 'bob.smith@example.com',
+				role: 'User',
+				status: 'active',
+			},
+			{
+				id: 3,
+				name: 'Carol Lee',
+				email: 'carol.lee@example.com',
+				role: 'User',
+				status: 'inactive',
+			},
+			{
+				id: 4,
+				name: 'David Nguyen',
+				email: 'david.nguyen@example.com',
+				role: 'User',
+				status: 'active',
+			},
+			{
+				id: 5,
+				name: 'Eve Martinez',
+				email: 'eve.martinez@example.com',
+				role: 'User',
+				status: 'inactive',
+			},
+		]
+
+		nextId = 6 // Reset the ID counter
 
 		res.json({
-			message: 'Database reset successfully',
-			usersRestored: result.usersRestored,
-			resetTime: result.resetTime,
+			message: 'Demo database reset successfully! 🎬',
+			usersRestored: 5,
+			resetTime: new Date().toISOString(),
+			mode: 'In-Memory Demo Mode',
+			note: 'Perfect for CI/CD demonstrations - data auto-resets on deployments!',
 		})
 	} catch (error) {
-		console.error('Error during manual reset:', error)
-		res.status(500).json({ error: 'Failed to reset database' })
+		console.error('Error during demo reset:', error)
+		res.status(500).json({ error: 'Failed to reset demo database' })
 	}
 })
 

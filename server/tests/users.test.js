@@ -462,7 +462,7 @@ describe('Users API', () => {
 
 				expect(response.status).toBe(400)
 				expect(response.body).toHaveProperty('error')
-				expect(response.body.error).toContain('Maximum of 10 users allowed')
+				expect(response.body.error).toContain('Demo limit reached!')
 				expect(response.body).toHaveProperty('currentCount')
 				expect(response.body).toHaveProperty('maxAllowed')
 				expect(response.body.maxAllowed).toBe(10)
@@ -538,9 +538,11 @@ describe('Users API', () => {
 			expect(statusResponse.body.maxUsers).toBe(10)
 			expect(statusResponse.body.defaultUsers).toBe(5)
 			expect(statusResponse.body.additionalAllowed).toBe(5)
-			expect(statusResponse.body.resetSchedule).toBe('Daily at midnight UTC')
-			expect(statusResponse.body).toHaveProperty('lastResetInfo')
-			expect(statusResponse.body.lastResetInfo).toContain('automatically reset')
+			expect(statusResponse.body.resetSchedule).toBe('On new deployments')
+			expect(statusResponse.body).toHaveProperty('demoInfo')
+			expect(statusResponse.body.demoInfo.autoReset).toContain(
+				'resets on new deployments'
+			)
 		})
 	})
 })
