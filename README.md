@@ -13,49 +13,46 @@
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
 
-A professional-grade full-stack web application demonstrating enterprise-level DevOps practices. Built with React 19, TypeScript, Node.js, and MySQL, featuring comprehensive CI/CD pipeline, microservices architecture, and intelligent deployment management with stable URL coordination.
+A professional-grade full-stack web application demonstrating enterprise-level DevOps practices. Built with React 19, TypeScript, Node.js, and intelligent database fallback, featuring comprehensive CI/CD pipeline, unified deployment architecture, and demo-friendly user experience with educational messaging.
 
-## 🌐 Live Demo & Environments
+## 🌐 Live Demo
 
-### 🏆 **Production Environment** (Stable)
+### 🏆 **Production Environment**
 
-- **🖥️ Frontend**: [https://react-demo-app-stable.vercel.app](https://react-demo-app-stable.vercel.app)
-- **🔗 API**: [https://react-demo-api-stable.vercel.app/api](https://react-demo-api-stable.vercel.app/api)
-- **📊 Health Check**: [https://react-demo-api-stable.vercel.app/api/health](https://react-demo-api-stable.vercel.app/api/health)
+- **🖥️ Full-Stack App**: [https://react-demo-virid-six.vercel.app](https://react-demo-virid-six.vercel.app)
+- **🔗 API Endpoints**: [https://react-demo-virid-six.vercel.app/api](https://react-demo-virid-six.vercel.app/api)
+- **📊 Health Check**: [https://react-demo-virid-six.vercel.app/api/health](https://react-demo-virid-six.vercel.app/api/health)
 
-### 🧪 **Preview Environment** (Latest Changes)
-
-- **🔄 Auto-deployed** on every commit to `main`
-- **📋 Testing URLs** provided in [GitHub Actions](https://github.com/Serk4/React-Demo/actions) logs
-- **🎯 Manual promotion** to production after testing
-
-### 🚀 **DevOps Pipeline Showcase**
+### 🚀 **Enterprise DevOps Showcase**
 
 ```
-📝 Code Push → 🧪 Tests → 🔄 Preview → 👤 Manual Testing → 🏆 Production
+� Feature Branch → 🧪 Pull Request → ✅ Tests & Quality Gates → 🚀 Production
 ```
 
-- **Automated**: Testing, security checks, preview deployment
-- **Manual**: Quality gate before production promotion
-- **Enterprise**: Proper staging → production workflow
+**Enterprise Best Practices Demonstrated:**
+
+- **� Feature Branch Development** - Isolated development with branch protection
+- **🔄 Pull Request Workflow** - Code review and automated quality checks
+- **🧪 Test-Driven Quality** - Required status checks before merge
+- **🚀 Automated Deployment** - Clean merge strategies with production rollout
+- **🧹 Repository Hygiene** - Squash merges and branch cleanup
+- **📊 Demo Engineering** - User-friendly limits and educational messaging
 
 </div>
 
 ## 🚀 Features
 
-- **Enterprise CI/CD Pipeline**: Complete GitHub Actions automation with testing, security, and dual deployment
-- **Microservices Architecture**: Independent frontend and backend deployments with stable URL coordination
+- **Enterprise CI/CD Pipeline**: Complete GitHub Actions automation with feature branches, pull requests, and quality gates
+- **Unified Architecture**: Single Vercel deployment serving both frontend and backend with intelligent fallback systems
 - **React Frontend**: Modern React 19 with TypeScript and Vite
-- **Professional UI**: Navigation menu with responsive design and user edit modals
-- **User Management**: Complete CRUD interface with data tables and real-time updates
-- **Node.js Backend**: Express.js REST API with MySQL database integration
-- **MySQL Database**: Professional database migration from SQL Server to MySQL
-- **Smart Fallback**: Graceful degradation from MySQL to in-memory storage
-- **Automated Testing**: Comprehensive test suite with 28 API tests
-- **Stable URL Management**: Solves microservices URL synchronization with Vercel aliases
-- **Environment Strategy**: Professional dev/test/prod configuration management
-- **Zero-Downtime Deployment**: Rolling updates with health checks
-- **Database Migration Tools**: Complete migration scripts and documentation
+- **Professional UI**: Navigation menu with responsive design and enhanced user experience
+- **User Management**: Complete CRUD interface with demo-friendly limits and educational messaging
+- **Node.js Backend**: Express.js REST API with intelligent in-memory database fallback
+- **Smart Database System**: Professional MySQL integration with graceful in-memory fallback
+- **Demo Engineering**: User-friendly 10-user limits with helpful guidance and shared environment messaging
+- **Comprehensive Testing**: 33 automated tests covering API endpoints, integration, and quality assurance
+- **Repository Hygiene**: Branch protection, squash merges, automated cleanup, and professional git workflow
+- **Zero-Downtime Deployment**: Simplified deployment architecture with health checks
 
 ## 📋 Prerequisites
 
@@ -85,12 +82,13 @@ A professional-grade full-stack web application demonstrating enterprise-level D
 
 ### Comprehensive Testing Suite
 
-This project includes **28 automated tests** covering:
+This project includes **33 automated tests** covering:
 
-- **API Tests**: Complete CRUD operations (users.test.js - 21 tests)
+- **API Tests**: Complete CRUD operations with enhanced user limits (users.test.js - 24 tests)
 - **Integration Tests**: Full workflow validation (integration.test.js - 4 tests)
 - **Health Checks**: System connectivity (basic.test.js - 3 tests)
-- **Mock Mode**: Tests work with or without database (perfect for CI/CD)
+- **Quality Gates**: All tests must pass before merge to main branch
+- **Demo Features**: User limit validation, educational messaging, shared environment testing
 
 ### Running Tests Locally
 
@@ -150,38 +148,24 @@ The project uses **GitHub Actions** for automated testing and **dual Vercel depl
 ✅ Security warnings (non-blocking)
 ```
 
-**4. Deploy Job (Ubuntu)**
+**4. Unified Deployment (Ubuntu)**
 
 ```yaml
 ✅ Runs only on successful main branch pushes
-✅ Deploys Frontend to Vercel (React SPA)
-✅ Deploys Backend to Vercel (Node.js serverless)
-✅ Updates production URLs automatically
-✅ Environment-specific configuration
+✅ Deploys unified full-stack application to Vercel
+✅ Frontend and backend deployed together seamlessly
+✅ Single production URL for simplified architecture
+✅ Automatic health checks and deployment verification
 ```
 
-#### 📊 **Enterprise Deployment Architecture**
+#### 📊 **Simplified Enterprise Architecture**
 
-**🏗️ Microservices Design:**
+**🏗️ Unified Design:**
 
-- **Frontend Service**: `react-demo-app-stable.vercel.app` (Static React SPA)
-- **Backend Service**: `react-demo-api-stable.vercel.app` (Node.js serverless functions)
-- **Database Service**: MySQL (local) → In-memory (fallback) → Cloud MySQL (production)
-- **Stable URL Strategy**: Permanent aliases that update deployment targets without changing environment variables
-
-**🔄 Deployment Coordination:**
-
-- **Problem Solved**: Eliminated the microservices URL synchronization Catch-22
-- **Solution**: Vercel aliases provide stable URLs while actual deployments can change freely
-- **Environment Variables**: `VITE_API_URL`, `VITE_TEST_API_URL`, `VITE_PROD_API_URL` use stable endpoints
-- **Alias Management**: Update deployment targets without touching environment configuration
-
-**🎯 Production URLs:**
-
-- **Frontend**: https://react-demo-app-stable.vercel.app
-- **Backend API**: https://react-demo-api-stable.vercel.app/api
-- **Health Check**: https://react-demo-api-stable.vercel.app/api/health
-- **Users API**: https://react-demo-api-stable.vercel.app/api/users
+- **Full-Stack Service**: `react-demo-virid-six.vercel.app` (React frontend + Node.js API)
+- **Database Service**: Intelligent MySQL fallback → In-memory storage (demo mode)
+- **API Endpoints**: `/api/*` routes served from same domain (no CORS complexity)
+- **Demo Engineering**: Smart 10-user limits with educational messaging for visitors
 
 #### 🔍 **Pipeline Status**
 
@@ -259,30 +243,24 @@ The application uses a professional 3-tier environment variable strategy:
 **Automatic Environment Detection:**
 
 ```typescript
-// In src/config/api.ts - Intelligent environment switching
+// In src/config/api.ts - Simplified environment switching
 const getApiBaseUrl = () => {
-	// Development: localhost
+	// Development: localhost backend
 	if (import.meta.env.DEV) {
 		return 'http://localhost:3001/api'
 	}
 
-	// Production: Stable URL (never changes!)
-	return (
-		import.meta.env.VITE_API_URL ||
-		import.meta.env.VITE_TEST_API_URL ||
-		import.meta.env.VITE_PROD_API_URL
-	)
+	// Production: Same-origin API routes (simplified!)
+	return '/api'
 }
 ```
 
-**Vercel Environment Variables Setup:**
+**Simplified Configuration:**
 
-```env
-# These URLs are STABLE - they never change even with new deployments
-VITE_API_URL=https://react-demo-api-stable.vercel.app/api
-VITE_TEST_API_URL=https://react-demo-api-stable.vercel.app/api
-VITE_PROD_API_URL=https://react-demo-api-stable.vercel.app/api
-```
+- **Development**: Uses `http://localhost:3001/api` for local backend server
+- **Production**: Uses `/api` relative URLs (same-origin, no CORS issues)
+- **Zero Environment Variables**: No complex URL coordination needed
+- **Automatic Detection**: Works seamlessly across all environments
 
 **Local Development Backend (.env):**
 
@@ -416,26 +394,31 @@ react-demo/
 
 ### Users Management
 
-- `GET /api/users` - Get all users with real-time data
+- `GET /api/users` - Get all users with intelligent limit status
 - `GET /api/users/:id` - Get specific user by ID
-- `POST /api/users` - Create new user with validation
+- `POST /api/users` - Create new user with demo-friendly limit messaging
 - `PUT /api/users/:id` - Update user with field validation
-- `DELETE /api/users/:id` - Delete user with confirmation
+- `DELETE /api/users/:id` - Delete user with helpful guidance
 
-### System
+### System & Demo Features
 
 - `GET /api/health` - Health check with database status
+- `GET /api/users/admin/status` - Demo status with user count and helpful messaging
+- `POST /api/users/admin/reset` - Demo reset functionality for clean testing state
 
 ### Example API Usage
 
 ```bash
 # Get all users
-curl https://server-[deployment-id].vercel.app/api/users
+curl https://react-demo-virid-six.vercel.app/api/users
 
-# Create a new user
-curl -X POST https://server-[deployment-id].vercel.app/api/users \
+# Create a new user (with demo limit handling)
+curl -X POST https://react-demo-virid-six.vercel.app/api/users \
   -H "Content-Type: application/json" \
   -d '{"firstName":"John","lastName":"Doe","email":"john@example.com","isActive":true}'
+
+# Check demo status and limits
+curl https://react-demo-virid-six.vercel.app/api/users/admin/status
 ```
 
 ## 🔧 Enterprise Configuration Management
@@ -711,10 +694,10 @@ For issues or questions:
 
 **🚀 Enterprise CI/CD Pipeline - From Code to Production in Minutes**
 
-_Professional microservices architecture with stable URL coordination, comprehensive testing, and zero-downtime deployments._
+_Professional unified full-stack architecture with comprehensive testing, enterprise best practices, and zero-complexity deployments._
 
-**Live Demo:** https://react-demo-app-stable.vercel.app  
-**API Health:** https://react-demo-api-stable.vercel.app/api/health
+**Live Demo:** https://react-demo-virid-six.vercel.app  
+**API Health:** https://react-demo-virid-six.vercel.app/api/health
 
-_Built with React 19, Node.js, MySQL, GitHub Actions, and deployed on Vercel with enterprise DevOps practices._
+_Built with React 19, Node.js, intelligent database fallback, GitHub Actions, and deployed on Vercel with enterprise DevOps practices._
 // Environment variables updated 11/12/2025 16:09:20
