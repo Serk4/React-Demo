@@ -13,31 +13,61 @@ export default function Home() {
       <div className="deployment-info">
         <h3>🌐 Deployment Architecture</h3>
         <p>
-          This application demonstrates professional Preview → Production workflow. 
-          Every code change triggers automated testing and preview deployment, 
-          followed by manual promotion to production after quality verification.
+          This application demonstrates a simplified, production-ready CI/CD pipeline. 
+          Every code change goes through automated testing, security scanning, and quality gates 
+          before deploying to a unified full-stack environment.
         </p>
       </div>
 
       <div className="features-grid">
         <div className="feature-card">
-          <h3>🚀 CI/CD Pipeline</h3>
-          <p>Automated testing, security scanning, and dual deployment with Preview → Production workflow</p>
+          <h3>🚀 Enterprise CI/CD</h3>
+          <p>Feature branch development, automated testing, pull request workflow, and production deployment with branch protection rules</p>
         </div>
         
         <div className="feature-card">
-          <h3>🏗️ Microservices</h3>
-          <p>Independent frontend and backend deployments with stable URL coordination</p>
+          <h3>🏗️ Unified Architecture</h3>
+          <p>Single Vercel deployment serving both frontend and backend with intelligent in-memory database fallback</p>
         </div>
         
         <div className="feature-card">
-          <h3>🧪 Testing Suite</h3>
-          <p>28 comprehensive API tests covering CRUD operations and integration scenarios</p>
+          <h3>🧪 Comprehensive Testing</h3>
+          <p>33 automated tests covering API endpoints, integration scenarios, and user management with quality gate enforcement</p>
         </div>
         
         <div className="feature-card">
-          <h3>🗄️ Database Migration</h3>
-          <p>Professional SQL Server → MySQL migration with smart fallback system</p>
+          <h3>🎯 Demo-Friendly Design</h3>
+          <p>Smart user limits with educational messaging, shared demo environment, and automatic reset capabilities</p>
+        </div>
+      </div>
+
+      <div className="tech-stack">
+        <h2>Enterprise Best Practices Demonstrated</h2>
+        <div className="practices-grid">
+          <div className="practice-item">
+            <strong>🌿 Feature Branch Development</strong>
+            <span>Isolated development with branch protection</span>
+          </div>
+          <div className="practice-item">
+            <strong>🔄 Pull Request Workflow</strong>
+            <span>Code review and automated quality checks</span>
+          </div>
+          <div className="practice-item">
+            <strong>🧪 Test-Driven Quality</strong>
+            <span>Required status checks before merge</span>
+          </div>
+          <div className="practice-item">
+            <strong>🚀 Automated Deployment</strong>
+            <span>Clean merge strategies with production rollout</span>
+          </div>
+          <div className="practice-item">
+            <strong>🧹 Repository Hygiene</strong>
+            <span>Squash merges and branch cleanup</span>
+          </div>
+          <div className="practice-item">
+            <strong>📊 Demo Engineering</strong>
+            <span>User-friendly limits and educational messaging</span>
+          </div>
         </div>
       </div>
 
@@ -47,7 +77,7 @@ export default function Home() {
           <span className="tech-badge react">React 19</span>
           <span className="tech-badge typescript">TypeScript</span>
           <span className="tech-badge nodejs">Node.js</span>
-          <span className="tech-badge mysql">MySQL</span>
+          <span className="tech-badge mysql">MySQL Fallback</span>
           <span className="tech-badge vite">Vite</span>
           <span className="tech-badge vercel">Vercel</span>
         </div>
