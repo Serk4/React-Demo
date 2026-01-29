@@ -20,6 +20,7 @@ function App() {
           <ul className="menu-nav">
             <li><Link to="/" className="nav-link">Home</Link></li>
             <li><Link to="/users" className="nav-link">Users</Link></li>
+            <li><Link to="/roles" className="nav-link">Roles</Link></li>
           </ul>
         </div>
       </nav>
