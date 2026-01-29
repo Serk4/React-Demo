@@ -59,15 +59,19 @@ router.get('/', async (req, res) => {
 
 		const [rows] = await pool.execute(`
 			SELECT 
-				id,
-				first_name,
-				last_name,
-				email,
-				is_active,
-				created_at,
-				updated_at
-			FROM users
-			ORDER BY id
+				u.id,
+				u.first_name,
+				u.last_name,
+				u.email,
+				u.is_active,
+				u.created_at,
+				u.updated_at,
+				GROUP_CONCAT(r.name ORDER BY r.name SEPARATOR ', ') as roles
+			FROM users u
+			LEFT JOIN user_roles ur ON u.id = ur.user_id
+			LEFT JOIN roles r ON ur.role_id = r.id
+			GROUP BY u.id, u.first_name, u.last_name, u.email, u.is_active, u.created_at, u.updated_at
+			ORDER BY u.id
 		`)
 
 		// Transform data to match frontend interface
@@ -75,12 +79,12 @@ router.get('/', async (req, res) => {
 			id: user.id,
 			name: `${user.first_name} ${user.last_name}`,
 			email: user.email,
-			role: 'User', // Default role
+			role: user.roles || 'No roles assigned',
 			status: user.is_active ? 'active' : 'inactive',
 		}))
 
 		console.log(
-			`✅ Successfully fetched ${transformedUsers.length} users from MySQL`
+			`✅ Successfully fetched ${transformedUsers.length} users from MySQL`,
 		)
 		res.json(transformedUsers)
 	} catch (error) {
@@ -115,7 +119,7 @@ router.get('/:id', async (req, res) => {
 			FROM users
 			WHERE id = ?
 		`,
-			[id]
+			[id],
 		)
 
 		if (rows.length === 0) {
@@ -179,7 +183,7 @@ router.post('/', async (req, res) => {
 			}
 			users.push(newUser)
 			console.log(
-				`✅ Created new user in memory: ${newUser.name} (${users.length}/10)`
+				`✅ Created new user in memory: ${newUser.name} (${users.length}/10)`,
 			)
 
 			// Add helpful context when approaching limit
@@ -202,7 +206,7 @@ router.post('/', async (req, res) => {
 
 		// Check current user count before inserting
 		const [countResult] = await pool.execute(
-			'SELECT COUNT(*) as count FROM users'
+			'SELECT COUNT(*) as count FROM users',
 		)
 		const currentCount = countResult[0].count
 
@@ -231,7 +235,7 @@ router.post('/', async (req, res) => {
 			INSERT INTO users (first_name, last_name, email, is_active)
 			VALUES (?, ?, ?, ?)
 		`,
-			[firstName, lastName, email, isActive]
+			[firstName, lastName, email, isActive],
 		)
 
 		const newUser = {
@@ -243,7 +247,7 @@ router.post('/', async (req, res) => {
 		}
 
 		console.log(
-			`✅ Created new user in MySQL: ${newUser.name} (${currentCount + 1}/10)`
+			`✅ Created new user in MySQL: ${newUser.name} (${currentCount + 1}/10)`,
 		)
 
 		// Add helpful context when approaching limit
@@ -310,7 +314,7 @@ router.put('/:id', async (req, res) => {
 				is_active = ?
 			WHERE id = ?
 		`,
-			[firstName, lastName, email, isActive, id]
+			[firstName, lastName, email, isActive, id],
 		)
 
 		if (result.affectedRows === 0) {
@@ -347,7 +351,7 @@ router.delete('/:id', async (req, res) => {
 
 			const deletedUser = users.splice(userIndex, 1)[0]
 			console.log(
-				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/10 remaining)`
+				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/10 remaining)`,
 			)
 			return res.json({
 				message: 'User deleted successfully',
@@ -366,7 +370,7 @@ router.delete('/:id', async (req, res) => {
 			DELETE FROM users 
 			WHERE id = ?
 		`,
-			[id]
+			[id],
 		)
 
 		if (result.affectedRows === 0) {
@@ -375,12 +379,12 @@ router.delete('/:id', async (req, res) => {
 
 		// Get updated count after deletion
 		const [countResult] = await pool.execute(
-			'SELECT COUNT(*) as count FROM users'
+			'SELECT COUNT(*) as count FROM users',
 		)
 		const remainingCount = countResult[0].count
 
 		console.log(
-			`✅ Deleted user from MySQL: ID ${id} (${remainingCount}/10 remaining)`
+			`✅ Deleted user from MySQL: ID ${id} (${remainingCount}/10 remaining)`,
 		)
 		res.json({
 			message: 'User deleted successfully',
@@ -409,7 +413,7 @@ router.get('/admin/status', async (req, res) => {
 		} else {
 			const pool = getPool()
 			const [countResult] = await pool.execute(
-				'SELECT COUNT(*) as count FROM users'
+				'SELECT COUNT(*) as count FROM users',
 			)
 			currentCount = countResult[0].count
 			storageType = 'mysql'
@@ -430,15 +434,15 @@ router.get('/admin/status', async (req, res) => {
 					currentCount >= 10
 						? '🚫 Demo limit reached!'
 						: currentCount >= 8
-						? `⚠️ Approaching limit (${currentCount}/10)`
-						: `✅ ${10 - currentCount} users remaining`,
+							? `⚠️ Approaching limit (${currentCount}/10)`
+							: `✅ ${10 - currentCount} users remaining`,
 				canCreateUsers: currentCount < 10,
 				suggestion:
 					currentCount >= 10
 						? 'Delete a user or use Reset to continue testing'
 						: currentCount >= 8
-						? 'Consider testing delete/edit features soon'
-						: 'Feel free to create more test users',
+							? 'Consider testing delete/edit features soon'
+							: 'Feel free to create more test users',
 			},
 			demoInfo: {
 				purpose: 'CI/CD Pipeline Demonstration',

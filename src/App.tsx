@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import './App.css'
 import Home from './pages/Home'
 import Users from './pages/Users'
+import Roles from './pages/Roles'
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
           <ul className="menu-nav">
             <li><Link to="/" className="nav-link">Home</Link></li>
             <li><Link to="/users" className="nav-link">Users</Link></li>
+            <li><Link to="/roles" className="nav-link">Roles</Link></li>
           </ul>
         </div>
       </nav>
@@ -29,6 +31,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/roles" element={<Roles />} />
         </Routes>
       </main>
     </>
