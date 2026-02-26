@@ -133,24 +133,62 @@ const initializeDatabase = async () => {
 
 			// Assign some sample user-role relationships
 			console.log('🔗 Creating sample user-role assignments...')
-			const userRoleAssignments = [
-				[1, 1], // Alice -> Admin
-				[1, 2], // Alice -> Manager (multiple roles)
-				[2, 2], // Bob -> Manager
-				[2, 3], // Bob -> Editor
-				[3, 4], // Carol -> Viewer
-				[4, 3], // David -> Editor
-				[4, 5], // David -> Support
-				[5, 4], // Eve -> Viewer
-			]
 
-			for (const assignment of userRoleAssignments) {
-				await dbConnection.execute(
-					'INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)',
-					assignment,
+			// Get existing users to assign roles to
+			const [existingUsers] = await dbConnection.execute(
+				'SELECT id FROM users ORDER BY id LIMIT 5',
+			)
+
+			if (existingUsers.length > 0) {
+				// Create assignments using actual user IDs
+				const userRoleAssignments = []
+
+				// First user -> Admin & Manager
+				if (existingUsers[0]) {
+					userRoleAssignments.push([existingUsers[0].id, 1]) // Admin
+					userRoleAssignments.push([existingUsers[0].id, 2]) // Manager
+				}
+
+				// Second user -> Manager & Editor
+				if (existingUsers[1]) {
+					userRoleAssignments.push([existingUsers[1].id, 2]) // Manager
+					userRoleAssignments.push([existingUsers[1].id, 3]) // Editor
+				}
+
+				// Third user -> Viewer
+				if (existingUsers[2]) {
+					userRoleAssignments.push([existingUsers[2].id, 4]) // Viewer
+				}
+
+				// Fourth user -> Editor & Support
+				if (existingUsers[3]) {
+					userRoleAssignments.push([existingUsers[3].id, 3]) // Editor
+					userRoleAssignments.push([existingUsers[3].id, 5]) // Support
+				}
+
+				// Fifth user -> Viewer
+				if (existingUsers[4]) {
+					userRoleAssignments.push([existingUsers[4].id, 4]) // Viewer
+				}
+
+				for (const assignment of userRoleAssignments) {
+					try {
+						await dbConnection.execute(
+							'INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)',
+							assignment,
+						)
+					} catch (assignmentError) {
+						console.log(
+							`⚠️ Skipped duplicate assignment: User ${assignment[0]} -> Role ${assignment[1]}`,
+						)
+					}
+				}
+				console.log(
+					`✅ Sample user-role assignments created for ${existingUsers.length} users`,
 				)
+			} else {
+				console.log('⚠️ No existing users found, skipping role assignments')
 			}
-			console.log('✅ Sample user-role assignments created')
 		}
 
 		dbConnection.release()
