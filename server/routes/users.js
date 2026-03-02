@@ -287,6 +287,12 @@ router.post('/', async (req, res) => {
 			if (existingUser) {
 				return res.status(400).json({
 					error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
+				})
+			}
+
+			// Check 10-user limit for in-memory storage
+			if (users.length >= 10) {
+				return res.status(400).json({
 					error:
 						'Demo limit reached! 📊 This demo app has a 10-user limit. Delete an existing user or use the Reset button.',
 					currentCount: users.length,
