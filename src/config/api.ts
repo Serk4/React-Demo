@@ -21,7 +21,9 @@ const API_BASE_URL = getApiBaseUrl();
 
 export const apiEndpoints = {
   users: `${API_BASE_URL}/users`,
+  roles: `${API_BASE_URL}/roles`,
   health: `${API_BASE_URL}/health`,
 };
 
+export { getApiBaseUrl };
 export default API_BASE_URL;

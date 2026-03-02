@@ -60,9 +60,35 @@ const initializeDatabase = async () => {
 		`)
 		console.log('📋 Users table ready')
 
+		// Create roles table if it doesn't exist
+		await dbConnection.execute(`
+			CREATE TABLE IF NOT EXISTS roles (
+				id INT AUTO_INCREMENT PRIMARY KEY,
+				name VARCHAR(50) UNIQUE NOT NULL,
+				description VARCHAR(255) NOT NULL,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+			)
+		`)
+		console.log('🎭 Roles table ready')
+
+		// Create user_roles junction table if it doesn't exist
+		await dbConnection.execute(`
+			CREATE TABLE IF NOT EXISTS user_roles (
+				id INT AUTO_INCREMENT PRIMARY KEY,
+				user_id INT NOT NULL,
+				role_id INT NOT NULL,
+				assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+				FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+				UNIQUE KEY unique_user_role (user_id, role_id)
+			)
+		`)
+		console.log('🔗 User-Roles junction table ready')
+
 		// Insert sample data if table is empty
 		const [rows] = await dbConnection.execute(
-			'SELECT COUNT(*) as count FROM users'
+			'SELECT COUNT(*) as count FROM users',
 		)
 		if (rows[0].count === 0) {
 			console.log('📝 Inserting sample users...')
@@ -77,10 +103,92 @@ const initializeDatabase = async () => {
 			for (const user of sampleUsers) {
 				await dbConnection.execute(
 					'INSERT INTO users (first_name, last_name, email, is_active) VALUES (?, ?, ?, ?)',
-					user
+					user,
 				)
 			}
 			console.log('✅ Sample users inserted')
+		}
+
+		// Insert sample roles if roles table is empty
+		const [roleRows] = await dbConnection.execute(
+			'SELECT COUNT(*) as count FROM roles',
+		)
+		if (roleRows[0].count === 0) {
+			console.log('🎭 Inserting sample roles...')
+			const sampleRoles = [
+				['Admin', 'Full system access with user management capabilities'],
+				['Manager', 'Departmental management with limited admin features'],
+				['Editor', 'Content creation and editing permissions'],
+				['Viewer', 'Read-only access to system resources'],
+				['Support', 'Customer support and helpdesk capabilities'],
+			]
+
+			for (const role of sampleRoles) {
+				await dbConnection.execute(
+					'INSERT INTO roles (name, description) VALUES (?, ?)',
+					role,
+				)
+			}
+			console.log('✅ Sample roles inserted')
+
+			// Assign some sample user-role relationships
+			console.log('🔗 Creating sample user-role assignments...')
+
+			// Get existing users to assign roles to
+			const [existingUsers] = await dbConnection.execute(
+				'SELECT id FROM users ORDER BY id LIMIT 5',
+			)
+
+			if (existingUsers.length > 0) {
+				// Create assignments using actual user IDs
+				const userRoleAssignments = []
+
+				// First user -> Admin & Manager
+				if (existingUsers[0]) {
+					userRoleAssignments.push([existingUsers[0].id, 1]) // Admin
+					userRoleAssignments.push([existingUsers[0].id, 2]) // Manager
+				}
+
+				// Second user -> Manager & Editor
+				if (existingUsers[1]) {
+					userRoleAssignments.push([existingUsers[1].id, 2]) // Manager
+					userRoleAssignments.push([existingUsers[1].id, 3]) // Editor
+				}
+
+				// Third user -> Viewer
+				if (existingUsers[2]) {
+					userRoleAssignments.push([existingUsers[2].id, 4]) // Viewer
+				}
+
+				// Fourth user -> Editor & Support
+				if (existingUsers[3]) {
+					userRoleAssignments.push([existingUsers[3].id, 3]) // Editor
+					userRoleAssignments.push([existingUsers[3].id, 5]) // Support
+				}
+
+				// Fifth user -> Viewer
+				if (existingUsers[4]) {
+					userRoleAssignments.push([existingUsers[4].id, 4]) // Viewer
+				}
+
+				for (const assignment of userRoleAssignments) {
+					try {
+						await dbConnection.execute(
+							'INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)',
+							assignment,
+						)
+					} catch (assignmentError) {
+						console.log(
+							`⚠️ Skipped duplicate assignment: User ${assignment[0]} -> Role ${assignment[1]}`,
+						)
+					}
+				}
+				console.log(
+					`✅ Sample user-role assignments created for ${existingUsers.length} users`,
+				)
+			} else {
+				console.log('⚠️ No existing users found, skipping role assignments')
+			}
 		}
 
 		dbConnection.release()

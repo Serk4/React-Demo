@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const { initializeDatabase } = require('./database-mysql')
 const usersRoutes = require('./routes/users')
+const rolesRoutes = require('./routes/roles')
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -24,6 +25,7 @@ app.use(express.json())
 
 // Routes
 app.use('/api/users', usersRoutes)
+app.use('/api/roles', rolesRoutes)
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
