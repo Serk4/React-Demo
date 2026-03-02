@@ -49,17 +49,28 @@ export default function Users() {
 
 			const result = await response.json()
 
-			if (isSuccess(result)) {
+			if (response.ok) {
+				// Success: backend returns user object directly
+				const successResult: Result = {
+					kind: 'success',
+					data: `User "${firstName} ${lastName}" created successfully!`,
+				}
+
 				// Refresh users list on success
 				const fetchResponse = await fetch(apiEndpoints.users)
 				if (fetchResponse.ok) {
 					const data = await fetchResponse.json()
 					setUsers(data)
 				}
-				return result
+				return successResult
 			} else {
-				setError(result.message)
-				return result
+				// Error: backend returns { error: "message" } format
+				const errorResult: Result = {
+					kind: 'error',
+					message: result.error || 'Failed to create user',
+				}
+				setError(errorResult.message)
+				return errorResult
 			}
 		} catch {
 			const errorResult: Result = {
@@ -96,17 +107,28 @@ export default function Users() {
 
 			const result = await response.json()
 
-			if (isSuccess(result)) {
+			if (response.ok) {
+				// Success: backend returns user object directly
+				const successResult: Result = {
+					kind: 'success',
+					data: `User "${firstName} ${lastName}" updated successfully!`,
+				}
+
 				// Refresh users list on success
 				const fetchResponse = await fetch(apiEndpoints.users)
 				if (fetchResponse.ok) {
 					const data = await fetchResponse.json()
 					setUsers(data)
 				}
-				return result
+				return successResult
 			} else {
-				setError(result.message)
-				return result
+				// Error: backend returns { error: "message" } format
+				const errorResult: Result = {
+					kind: 'error',
+					message: result.error || 'Failed to update user',
+				}
+				setError(errorResult.message)
+				return errorResult
 			}
 		} catch {
 			const errorResult: Result = {
