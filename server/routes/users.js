@@ -273,10 +273,7 @@ router.post('/', async (req, res) => {
 		if (!firstName || !lastName || !email) {
 			return res
 				.status(400)
-				.json({
-					kind: 'error',
-					message: 'FirstName, LastName, and Email are required',
-				})
+				.json({ error: 'FirstName, LastName, and Email are required' })
 		}
 
 		// Check for duplicate name
@@ -289,31 +286,21 @@ router.post('/', async (req, res) => {
 			)
 			if (existingUser) {
 				return res.status(400).json({
-					kind: 'error',
-					message: `A user with the name "${fullName}" already exists. Please choose a different name.`,
-				})
-			}
-
-			// Check 10-user limit for in-memory storage
-			if (users.length >= 10) {
-				return res.status(400).json({
-					kind: 'error',
-					message:
+					error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
+					error:
 						'Demo limit reached! 📊 This demo app has a 10-user limit. Delete an existing user or use the Reset button.',
-					details: {
-						currentCount: users.length,
-						maxAllowed: 10,
-						howToContinue: {
-							option1: 'Delete an existing user to test the Create feature',
-							option2: 'Use the Reset button to restore default users',
-							note: 'Data resets automatically on new deployments',
-						},
-						tips: [
-							'💡 Try editing or deleting existing users',
-							'🔄 Use the reset feature for a clean slate',
-							'👥 This data is shared with all demo visitors',
-						],
+					currentCount: users.length,
+					maxAllowed: 10,
+					howToContinue: {
+						option1: 'Delete an existing user to test the Create feature',
+						option2: 'Use the Reset button to restore default users',
+						note: 'Data resets automatically on new deployments',
 					},
+					tips: [
+						'💡 Try editing or deleting existing users',
+						'🔄 Use the reset feature for a clean slate',
+						'👥 This data is shared with all demo visitors',
+					],
 				})
 			}
 
@@ -329,11 +316,7 @@ router.post('/', async (req, res) => {
 				`✅ Created new user in memory: ${newUser.name} (${users.length}/10)`,
 			)
 
-			return res.status(201).json({
-				kind: 'success',
-				data: `User "${fullName}" created successfully!`,
-				user: newUser,
-			})
+			return res.status(201).json(newUser)
 		}
 
 		const pool = getPool()
@@ -346,8 +329,7 @@ router.post('/', async (req, res) => {
 
 		if (existingUsers.length > 0) {
 			return res.status(400).json({
-				kind: 'error',
-				message: `A user with the name "${fullName}" already exists. Please choose a different name.`,
+				error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
 			})
 		}
 
@@ -360,23 +342,20 @@ router.post('/', async (req, res) => {
 		if (currentCount >= 10) {
 			console.log(`🚫 User creation blocked: ${currentCount}/10 users exist`)
 			return res.status(400).json({
-				kind: 'error',
-				message:
+				error:
 					'Demo limit reached! 📊 This demo app has a 10-user limit. Delete an existing user or use the Reset button.',
-				details: {
-					currentCount: currentCount,
-					maxAllowed: 10,
-					howToContinue: {
-						option1: 'Delete an existing user to test the Create feature',
-						option2: 'Use the Reset button to restore default users',
-						note: 'Data resets automatically on new deployments',
-					},
-					tips: [
-						'💡 Try editing or deleting existing users',
-						'🔄 Use the reset feature for a clean slate',
-						'👥 This data is shared with all demo visitors',
-					],
+				currentCount: currentCount,
+				maxAllowed: 10,
+				howToContinue: {
+					option1: 'Delete an existing user to test the Create feature',
+					option2: 'Use the Reset button to restore default users',
+					note: 'Data resets automatically on new deployments',
 				},
+				tips: [
+					'💡 Try editing or deleting existing users',
+					'🔄 Use the reset feature for a clean slate',
+					'👥 This data is shared with all demo visitors',
+				],
 			})
 		}
 
@@ -400,17 +379,10 @@ router.post('/', async (req, res) => {
 			`✅ Created new user in MySQL: ${newUser.name} (${currentCount + 1}/10)`,
 		)
 
-		res.status(201).json({
-			kind: 'success',
-			data: `User "${fullName}" created successfully!`,
-			user: newUser,
-		})
+		return res.status(201).json(newUser)
 	} catch (error) {
 		console.error('Error creating user:', error)
-		res.status(500).json({
-			kind: 'error',
-			message: 'Failed to create user. Please try again.',
-		})
+		res.status(500).json({ error: 'Failed to create user. Please try again.' })
 	}
 })
 
@@ -424,10 +396,7 @@ router.put('/:id', async (req, res) => {
 		if (!firstName || !lastName || !email) {
 			return res
 				.status(400)
-				.json({
-					kind: 'error',
-					message: 'FirstName, LastName, and Email are required',
-				})
+				.json({ error: 'FirstName, LastName, and Email are required' })
 		}
 
 		// Check for duplicate name (excluding current user)
@@ -437,9 +406,7 @@ router.put('/:id', async (req, res) => {
 			const userIndex = users.findIndex((u) => u.id === parseInt(id))
 
 			if (userIndex === -1) {
-				return res
-					.status(404)
-					.json({ kind: 'error', message: 'User not found' })
+				return res.status(404).json({ error: 'User not found' })
 			}
 
 			// Check for duplicate name (excluding current user)
@@ -450,8 +417,7 @@ router.put('/:id', async (req, res) => {
 			)
 			if (existingUser) {
 				return res.status(400).json({
-					kind: 'error',
-					message: `A user with the name "${fullName}" already exists. Please choose a different name.`,
+					error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
 				})
 			}
 
@@ -464,11 +430,7 @@ router.put('/:id', async (req, res) => {
 
 			users[userIndex] = updatedUser
 			console.log(`✅ Updated user in memory: ${updatedUser.name}`)
-			return res.json({
-				kind: 'success',
-				data: `User "${fullName}" updated successfully!`,
-				user: updatedUser,
-			})
+			return res.json(updatedUser)
 		}
 
 		const pool = getPool()
@@ -480,7 +442,7 @@ router.put('/:id', async (req, res) => {
 		)
 
 		if (existingUserResult.length === 0) {
-			return res.status(404).json({ kind: 'error', message: 'User not found' })
+			return res.status(404).json({ error: 'User not found' })
 		}
 
 		// Check for duplicate name (excluding current user)
@@ -491,8 +453,7 @@ router.put('/:id', async (req, res) => {
 
 		if (duplicateUsers.length > 0) {
 			return res.status(400).json({
-				kind: 'error',
-				message: `A user with the name "${fullName}" already exists. Please choose a different name.`,
+				error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
 			})
 		}
 		const [result] = await pool.execute(
@@ -509,7 +470,7 @@ router.put('/:id', async (req, res) => {
 		)
 
 		if (result.affectedRows === 0) {
-			return res.status(404).json({ kind: 'error', message: 'User not found' })
+			return res.status(404).json({ error: 'User not found' })
 		}
 
 		const updatedUser = {
@@ -521,17 +482,10 @@ router.put('/:id', async (req, res) => {
 		}
 
 		console.log(`✅ Updated user in MySQL: ${updatedUser.name}`)
-		res.json({
-			kind: 'success',
-			data: `User "${fullName}" updated successfully!`,
-			user: updatedUser,
-		})
+		res.json(updatedUser)
 	} catch (error) {
 		console.error('Error updating user:', error)
-		res.status(500).json({
-			kind: 'error',
-			message: 'Failed to update user. Please try again.',
-		})
+		res.status(500).json({ error: 'Failed to update user. Please try again.' })
 	}
 })
 
