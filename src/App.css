@@ -97,6 +97,14 @@
 	font-size: 1.1rem;
 }
 
+.database-note {
+	color: #888;
+	font-size: 0.9rem;
+	font-style: italic;
+	margin-top: 0.25rem;
+	margin-bottom: 0;
+}
+
 .page-actions {
 	display: flex;
 	justify-content: flex-end;
