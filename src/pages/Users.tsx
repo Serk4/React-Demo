@@ -297,6 +297,7 @@ export default function Users() {
 			<div className='page-header'>
 				<h1>Users Management</h1>
 				<p>Manage your application users from a MySQL database.</p>
+				<p className='database-note'>*This database will auto-reset nightly</p>
 				{error && <div className='error-message'>{error}</div>}
 				{successMessage && (
 					<div className='success-message'>{successMessage}</div>
