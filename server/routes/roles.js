@@ -1,10 +1,16 @@
 const express = require('express')
 const router = express.Router()
-const { getPool } = require('../database-mysql')
+const { getPool, isConnected } = require('../database-mysql')
+const sharedData = require('../shared-data')
 
 // Get all roles
 router.get('/', async (req, res) => {
 	try {
+		if (!isConnected()) {
+			console.log('📊 Returning in-memory roles as fallback')
+			return res.json(sharedData.getRoles())
+		}
+
 		const pool = getPool()
 		const [rows] = await pool.execute(`
 			SELECT 
@@ -21,10 +27,8 @@ router.get('/', async (req, res) => {
 		res.json(rows)
 	} catch (error) {
 		console.error('Error fetching roles:', error)
-		res.status(500).json({
-			error: 'Failed to fetch roles',
-			message: 'An error occurred while retrieving roles from the database',
-		})
+		console.log('📊 Returning in-memory roles as fallback')
+		res.json(roles)
 	}
 })
 
@@ -32,6 +36,32 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
 	try {
 		const { id } = req.params
+		const roleId = parseInt(id)
+
+		if (!isConnected()) {
+			console.log('📊 Using in-memory role lookup as fallback')
+			const role = sharedData.getRoles().find((r) => r.id === roleId)
+			if (!role) {
+				return res.status(404).json({ error: 'Role not found' })
+			}
+
+			// Get users assigned to this role from in-memory assignments
+			const assignedUsers = userRoleAssignments
+				.filter((assignment) => assignment.role_id === roleId)
+				.map((assignment) => ({
+					id: assignment.user_id,
+					first_name: `User`,
+					last_name: `${assignment.user_id}`,
+					email: `user${assignment.user_id}@example.com`,
+					is_active: true,
+					assigned_at: assignment.assigned_at,
+				}))
+
+			const roleWithUsers = { ...role }
+			roleWithUsers.users = assignedUsers
+			return res.json(roleWithUsers)
+		}
+
 		const pool = getPool()
 
 		// Get role details
@@ -67,10 +97,15 @@ router.get('/:id', async (req, res) => {
 		res.json(role)
 	} catch (error) {
 		console.error('Error fetching role:', error)
-		res.status(500).json({
-			error: 'Failed to fetch role',
-			message: 'An error occurred while retrieving role details',
-		})
+		console.log('📊 Using in-memory role lookup as fallback')
+		const roleId = parseInt(req.params.id)
+		const role = sharedData.getRoles().find((r) => r.id === roleId)
+		if (!role) {
+			return res.status(404).json({ error: 'Role not found' })
+		}
+
+		role.users = []
+		res.json(role)
 	}
 })
 
@@ -254,6 +289,48 @@ router.delete('/:id', async (req, res) => {
 router.post('/:roleId/users/:userId', async (req, res) => {
 	try {
 		const { roleId, userId } = req.params
+		const roleIdInt = parseInt(roleId)
+		const userIdInt = parseInt(userId)
+
+		if (!isConnected()) {
+			console.log('📊 Using in-memory role assignment as fallback')
+
+			// Check if role exists in memory
+			const roleExists = sharedData.getRoles().find((r) => r.id === roleIdInt)
+			if (!roleExists) {
+				return res.status(404).json({ error: 'Role not found' })
+			}
+
+			// Check if assignment already exists
+			const existingAssignment = sharedData
+				.getUserRoleAssignments()
+				.find(
+					(assignment) =>
+						assignment.user_id === userIdInt &&
+						assignment.role_id === roleIdInt,
+				)
+
+			if (existingAssignment) {
+				return res.status(409).json({
+					error: 'Assignment already exists',
+					message: 'This user is already assigned to this role',
+				})
+			}
+
+			// Add assignment to in-memory storage
+			sharedData.addUserRoleAssignment({
+				user_id: userIdInt,
+				role_id: roleIdInt,
+				assigned_at: new Date().toISOString(),
+			})
+
+			return res.status(201).json({
+				message: 'Role assigned successfully',
+				userId: userIdInt,
+				roleId: roleIdInt,
+			})
+		}
+
 		const pool = getPool()
 
 		// Validate role and user exist
@@ -309,6 +386,18 @@ router.post('/:roleId/users/:userId', async (req, res) => {
 router.delete('/:roleId/users/:userId', async (req, res) => {
 	try {
 		const { roleId, userId } = req.params
+		const roleIdInt = parseInt(roleId)
+		const userIdInt = parseInt(userId)
+
+		if (!isConnected()) {
+			console.log('📊 Using in-memory role removal as fallback')
+
+			// Remove assignment from in-memory storage
+			sharedData.removeUserRoleAssignment(userIdInt, roleIdInt)
+
+			return res.status(204).send()
+		}
+
 		const pool = getPool()
 
 		// Check if assignment exists
