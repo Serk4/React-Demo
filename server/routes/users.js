@@ -1,48 +1,8 @@
 const express = require('express')
 const { getPool, isConnected } = require('../database-mysql')
+const sharedData = require('../shared-data')
 
 const router = express.Router()
-
-// In-memory storage fallback when MySQL is not available
-let users = [
-	{
-		id: 1,
-		name: 'Alice Johnson',
-		email: 'alice.johnson@example.com',
-		role: 'User',
-		status: 'active',
-	},
-	{
-		id: 2,
-		name: 'Bob Smith',
-		email: 'bob.smith@example.com',
-		role: 'User',
-		status: 'active',
-	},
-	{
-		id: 3,
-		name: 'Carol Lee',
-		email: 'carol.lee@example.com',
-		role: 'User',
-		status: 'inactive',
-	},
-	{
-		id: 4,
-		name: 'David Nguyen',
-		email: 'david.nguyen@example.com',
-		role: 'User',
-		status: 'active',
-	},
-	{
-		id: 5,
-		name: 'Eve Martinez',
-		email: 'eve.martinez@example.com',
-		role: 'User',
-		status: 'inactive',
-	},
-]
-
-let nextId = 6
 
 // GET /api/users - Get all users
 router.get('/', async (req, res) => {
@@ -51,7 +11,33 @@ router.get('/', async (req, res) => {
 
 		if (!isConnected()) {
 			console.log('📊 Using in-memory storage fallback')
-			return res.json(users)
+
+			// Transform users and include role information from userRoleAssignments
+			const usersWithRoles = sharedData.getUsers().map((user) => {
+				// Find all role assignments for this user
+				const userAssignments = sharedData
+					.getUserRoleAssignments()
+					.filter((assignment) => assignment.user_id === user.id)
+
+				// Get role names for this user
+				const roleNames = userAssignments.map((assignment) => {
+					const role = sharedData
+						.getRoles()
+						.find((r) => r.id === assignment.role_id)
+					return role ? role.name : 'Unknown Role'
+				})
+
+				return {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					role:
+						roleNames.length > 0 ? roleNames.join(', ') : 'No roles assigned',
+					status: user.status,
+				}
+			})
+
+			return res.json(usersWithRoles)
 		}
 
 		const pool = getPool()
@@ -100,7 +86,7 @@ router.get('/:id', async (req, res) => {
 		const { id } = req.params
 
 		if (!isConnected()) {
-			const user = users.find((u) => u.id === parseInt(id))
+			const user = sharedData.getUsers().find((u) => u.id === parseInt(id))
 			if (!user) {
 				return res.status(404).json({ error: 'User not found' })
 			}
@@ -146,9 +132,35 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/roles', async (req, res) => {
 	try {
 		const { id } = req.params
+		const userId = parseInt(id)
 
 		if (!isConnected()) {
-			return res.json([])
+			console.log('📊 Using in-memory user roles fallback')
+
+			// Filter role assignments for this user
+			const userAssignments = sharedData
+				.getUserRoleAssignments()
+				.filter((assignment) => assignment.user_id === userId)
+
+			// Map assignments to include role information
+			const userRoles = userAssignments.map((assignment) => {
+				const role = sharedData
+					.getRoles()
+					.find((r) => r.id === assignment.role_id)
+				return {
+					id: assignment.role_id, // Using role_id as id for consistency
+					user_id: assignment.user_id,
+					role_id: assignment.role_id,
+					assigned_at: assignment.assigned_at,
+					role: {
+						id: role?.id || assignment.role_id,
+						name: role?.name || 'Unknown Role',
+						description: role?.description || 'Role not found',
+					},
+				}
+			})
+
+			return res.json(userRoles)
 		}
 
 		const pool = getPool()
@@ -170,7 +182,7 @@ router.get('/:id/roles', async (req, res) => {
 		)
 
 		// Transform data to include role object
-		const userRoles = rows.map((row) => ({
+		const dbUserRoles = rows.map((row) => ({
 			id: row.id,
 			user_id: row.user_id,
 			role_id: row.role_id,
@@ -182,7 +194,7 @@ router.get('/:id/roles', async (req, res) => {
 			},
 		}))
 
-		res.json(userRoles)
+		res.json(dbUserRoles)
 	} catch (error) {
 		console.error('Error fetching user roles:', error)
 		res.status(500).json({ error: 'Failed to fetch user roles' })
@@ -194,12 +206,50 @@ router.post('/:id/roles', async (req, res) => {
 	try {
 		const { id } = req.params
 		const { role_id } = req.body
+		const userId = parseInt(id)
+		const roleId = parseInt(role_id)
 
 		if (!role_id) {
 			return res.status(400).json({ error: 'Role ID is required' })
 		}
 
 		if (!isConnected()) {
+			console.log('📊 Using in-memory role assignment in users route')
+
+			// Check if role exists
+			const roleExists = sharedData.getRoles().find((r) => r.id === roleId)
+			if (!roleExists) {
+				return res.status(404).json({ error: 'Role not found' })
+			}
+
+			// Check if assignment already exists
+			const existingAssignment = sharedData
+				.getUserRoleAssignments()
+				.find(
+					(assignment) =>
+						assignment.user_id === userId && assignment.role_id === roleId,
+				)
+
+			if (existingAssignment) {
+				return res
+					.status(409)
+					.json({ error: 'Role already assigned to this user' })
+			}
+
+			// Add assignment to in-memory storage
+			sharedData.addUserRoleAssignment({
+				user_id: userId,
+				role_id: roleId,
+				assigned_at: new Date().toISOString(),
+			})
+
+			return res.status(201).json({
+				id: roleId, // Using roleId as id for consistency
+				user_id: userId,
+				role_id: roleId,
+				assigned_at: new Date().toISOString(),
+				message: 'Role assigned successfully',
+			})
 			return res
 				.status(500)
 				.json({ error: 'Database connection not available' })
@@ -242,11 +292,16 @@ router.post('/:id/roles', async (req, res) => {
 router.delete('/:id/roles/:roleId', async (req, res) => {
 	try {
 		const { id, roleId } = req.params
+		const userId = parseInt(id)
+		const roleIdInt = parseInt(roleId)
 
 		if (!isConnected()) {
-			return res
-				.status(500)
-				.json({ error: 'Database connection not available' })
+			console.log('📊 Using in-memory role removal in users route')
+
+			// Remove assignment from in-memory storage
+			sharedData.removeUserRoleAssignment(userId, roleIdInt)
+
+			return res.json({ message: 'Role removed successfully' })
 		}
 
 		const pool = getPool()
@@ -265,7 +320,9 @@ router.delete('/:id/roles/:roleId', async (req, res) => {
 		console.error('Error removing role:', error)
 		res.status(500).json({ error: 'Failed to remove role' })
 	}
-}) // POST /api/users - Create new user
+})
+
+// POST /api/users - Create new user
 router.post('/', async (req, res) => {
 	try {
 		const { firstName, lastName, email, isActive = true } = req.body
@@ -281,9 +338,9 @@ router.post('/', async (req, res) => {
 
 		if (!isConnected()) {
 			// Check for duplicate name in memory
-			const existingUser = users.find(
-				(u) => u.name.toLowerCase() === fullName.toLowerCase(),
-			)
+			const existingUser = sharedData
+				.getUsers()
+				.find((u) => u.name.toLowerCase() === fullName.toLowerCase())
 			if (existingUser) {
 				return res.status(400).json({
 					error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
@@ -291,11 +348,12 @@ router.post('/', async (req, res) => {
 			}
 
 			// Check 10-user limit for in-memory storage
-			if (users.length >= 10) {
+			if (sharedData.getUsers().length >= 10) {
 				return res.status(400).json({
 					error:
 						'Demo limit reached! 📊 This demo app has a 10-user limit. Delete an existing user or use the Reset button.',
-					currentCount: users.length,
+					currentCount: sharedData.getUsers().length,
+					currentCount: sharedData.getUsers().length,
 					maxAllowed: 10,
 					howToContinue: {
 						option1: 'Delete an existing user to test the Create feature',
@@ -311,18 +369,17 @@ router.post('/', async (req, res) => {
 			}
 
 			const newUser = {
-				id: nextId++,
 				name: `${firstName} ${lastName}`,
 				email: email,
 				role: 'User',
 				status: isActive ? 'active' : 'inactive',
 			}
-			users.push(newUser)
+			const createdUser = sharedData.addUser(newUser)
 			console.log(
-				`✅ Created new user in memory: ${newUser.name} (${users.length}/10)`,
+				`✅ Created new user in memory: ${createdUser.name} (${sharedData.getUsers().length}/10)`,
 			)
 
-			return res.status(201).json(newUser)
+			return res.status(201).json(createdUser)
 		}
 
 		const pool = getPool()
@@ -409,18 +466,22 @@ router.put('/:id', async (req, res) => {
 		const fullName = `${firstName} ${lastName}`
 
 		if (!isConnected()) {
-			const userIndex = users.findIndex((u) => u.id === parseInt(id))
+			const userIndex = sharedData
+				.getUsers()
+				.findIndex((u) => u.id === parseInt(id))
 
 			if (userIndex === -1) {
 				return res.status(404).json({ error: 'User not found' })
 			}
 
 			// Check for duplicate name (excluding current user)
-			const existingUser = users.find(
-				(u) =>
-					u.name.toLowerCase() === fullName.toLowerCase() &&
-					u.id !== parseInt(id),
-			)
+			const existingUser = sharedData
+				.getUsers()
+				.find(
+					(u) =>
+						u.name.toLowerCase() === fullName.toLowerCase() &&
+						u.id !== parseInt(id),
+				)
 			if (existingUser) {
 				return res.status(400).json({
 					error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
@@ -428,13 +489,13 @@ router.put('/:id', async (req, res) => {
 			}
 
 			const updatedUser = {
-				...users[userIndex],
+				...sharedData.getUsers()[userIndex],
 				name: `${firstName} ${lastName}`,
 				email: email,
 				status: isActive ? 'active' : 'inactive',
 			}
 
-			users[userIndex] = updatedUser
+			sharedData.getUsers()[userIndex] = updatedUser
 			console.log(`✅ Updated user in memory: ${updatedUser.name}`)
 			return res.json(updatedUser)
 		}
@@ -501,22 +562,30 @@ router.delete('/:id', async (req, res) => {
 		const { id } = req.params
 
 		if (!isConnected()) {
-			const userIndex = users.findIndex((u) => u.id === parseInt(id))
+			console.log(`🗑️ DELETE request for user ID: ${id}`)
+			console.log(`📊 Users before delete: ${sharedData.getUsers().length}`)
+
+			const userIndex = sharedData
+				.getUsers()
+				.findIndex((u) => u.id === parseInt(id))
 
 			if (userIndex === -1) {
+				console.log(`❌ User with ID ${id} not found`)
 				return res.status(404).json({ error: 'User not found' })
 			}
 
-			const deletedUser = users.splice(userIndex, 1)[0]
+			console.log(`🎯 Found user at index: ${userIndex}`)
+			const deletedUser = sharedData.getUsers().splice(userIndex, 1)[0]
+			console.log(`📊 Users after delete: ${sharedData.getUsers().length}`)
 			console.log(
-				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/10 remaining)`,
+				`✅ Deleted user from memory: ${deletedUser.name} (${sharedData.getUsers().length}/10 remaining)`,
 			)
 			return res.json({
 				message: 'User deleted successfully',
-				remainingUsers: users.length,
+				remainingUsers: sharedData.getUsers().length,
 				maxAllowed: 10,
 				note:
-					users.length === 0
+					sharedData.getUsers().length === 0
 						? 'All users deleted - 5 default users will reset at midnight'
 						: null,
 			})
@@ -566,7 +635,7 @@ router.get('/admin/status', async (req, res) => {
 		let storageType = 'memory'
 
 		if (!isConnected()) {
-			currentCount = users.length
+			currentCount = sharedData.getUsers().length
 			storageType = 'memory'
 		} else {
 			const pool = getPool()
@@ -621,7 +690,7 @@ router.post('/admin/reset', async (req, res) => {
 		console.log('🔄 Demo reset triggered - restoring default users...')
 
 		// Reset in-memory storage to defaults (perfect for demos!)
-		users = [
+		sharedData.setUsers([
 			{
 				id: 1,
 				name: 'Alice Johnson',
@@ -657,9 +726,10 @@ router.post('/admin/reset', async (req, res) => {
 				role: 'User',
 				status: 'inactive',
 			},
-		]
+		])
 
-		nextId = 6 // Reset the ID counter
+		// Reset the ID counter
+		sharedData.setNextUserId(6)
 
 		res.json({
 			message: 'Demo database reset successfully! 🎬',

@@ -142,49 +142,49 @@ export default function Users() {
 	}
 
 	useEffect(() => {
-		const fetchUsers = async () => {
-			try {
-				const response = await fetch(apiEndpoints.users)
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`)
-				}
-				const data = await response.json()
-				setUsers(data)
-			} catch (err) {
-				console.error('Failed to fetch users:', err)
-				setError('Failed to load users. Make sure the server is running.')
-				// Fallback to mock data if API fails
-				const mockUsers: User[] = [
-					{
-						id: 1,
-						name: 'John Doe',
-						email: 'john@example.com',
-						role: 'Admin',
-						status: 'active',
-					},
-					{
-						id: 2,
-						name: 'Jane Smith',
-						email: 'jane@example.com',
-						role: 'User',
-						status: 'active',
-					},
-					{
-						id: 3,
-						name: 'Bob Johnson',
-						email: 'bob@example.com',
-						role: 'Editor',
-						status: 'inactive',
-					},
-				]
-				setUsers(mockUsers)
-			} finally {
-				setLoading(false)
-			}
-		}
-
 		fetchUsers()
 	}, [])
+
+	const fetchUsers = async () => {
+		try {
+			const response = await fetch(apiEndpoints.users)
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`)
+			}
+			const data = await response.json()
+			setUsers(data)
+		} catch (err) {
+			console.error('Failed to fetch users:', err)
+			setError('Failed to load users. Make sure the server is running.')
+			// Fallback to mock data if API fails
+			const mockUsers: User[] = [
+				{
+					id: 1,
+					name: 'John Doe',
+					email: 'john@example.com',
+					role: 'Admin',
+					status: 'active',
+				},
+				{
+					id: 2,
+					name: 'Jane Smith',
+					email: 'jane@example.com',
+					role: 'User',
+					status: 'active',
+				},
+				{
+					id: 3,
+					name: 'Bob Johnson',
+					email: 'bob@example.com',
+					role: 'Editor',
+					status: 'inactive',
+				},
+			]
+			setUsers(mockUsers)
+		} finally {
+			setLoading(false)
+		}
+	}
 
 	const handleDelete = (userId: number) => {
 		if (!confirm('Are you sure you want to delete this user?')) {
@@ -331,11 +331,22 @@ export default function Users() {
 								<td>{user.name}</td>
 								<td>{user.email}</td>
 								<td>
-									<span
-										className={`role-badge role-${user.role.toLowerCase()}`}
-									>
-										{user.role}
-									</span>
+									<div className='role-badges-container'>
+										{user.role === 'No roles assigned' ? (
+											<span className='role-badge role-none'>
+												No roles assigned
+											</span>
+										) : (
+											user.role.split(', ').map((roleName, index) => (
+												<span
+													key={index}
+													className={`role-badge role-${roleName.toLowerCase().replace(/\s+/g, '-')}`}
+												>
+													{roleName}
+												</span>
+											))
+										)}
+									</div>
 								</td>
 								<td>
 									<span className={`status-badge status-${user.status}`}>
@@ -395,6 +406,7 @@ export default function Users() {
 				onSubmit={handleEditUser}
 				user={userToEdit}
 				isLoading={isEditingUser}
+				onRoleChange={fetchUsers}
 			/>
 		</div>
 	)

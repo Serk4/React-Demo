@@ -546,6 +546,20 @@
 	letter-spacing: 0.5px;
 }
 
+/* Multiple Role Badges Container */
+.role-badges-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	align-items: center;
+}
+
+.role-badges-container .role-badge {
+	font-size: 0.75rem;
+	padding: 0.2rem 0.5rem;
+	white-space: nowrap;
+}
+
 .role-admin {
 	background: #dc3545;
 	color: white;
@@ -569,6 +583,12 @@
 .role-support {
 	background: #17a2b8;
 	color: white;
+}
+
+.role-none {
+	background: #e9ecef;
+	color: #6c757d;
+	font-style: italic;
 }
 
 /* Modal Enhancements */
@@ -746,6 +766,21 @@
 	background: #f8d7da;
 	color: #721c24;
 	border: 1px solid #f5c6cb;
+}
+
+.inactive-user-notice {
+	background: #fff3cd;
+	border: 1px solid #ffeaa7;
+	color: #856404;
+	padding: 1rem;
+	border-radius: 6px;
+	margin-bottom: 1.5rem;
+}
+
+.inactive-user-notice p {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 500;
 }
 
 .current-roles {

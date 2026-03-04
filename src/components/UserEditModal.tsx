@@ -36,6 +36,7 @@ interface UserEditModalProps {
 	) => void
 	user: User | null
 	isLoading?: boolean
+	onRoleChange?: () => void
 }
 
 export default function UserEditModal({
@@ -44,6 +45,7 @@ export default function UserEditModal({
 	onSubmit,
 	user,
 	isLoading = false,
+	onRoleChange,
 }: UserEditModalProps) {
 	const [formData, setFormData] = useState({
 		firstName: '',
@@ -69,17 +71,21 @@ export default function UserEditModal({
 	// Populate form when user data changes
 	useEffect(() => {
 		if (user && isOpen) {
+			console.log('📋 Modal opened for user:', user)
 			// Split the name into first and last name
 			const nameParts = user.name.split(' ')
 			const firstName = nameParts[0] || ''
 			const lastName = nameParts.slice(1).join(' ') || ''
 
-			setFormData({
+			const newFormData = {
 				firstName,
 				lastName,
 				email: user.email,
 				isActive: user.status === 'active',
-			})
+			}
+
+			console.log('📝 Setting form data:', newFormData)
+			setFormData(newFormData)
 
 			// Clear any existing errors
 			setErrors({
@@ -88,7 +94,11 @@ export default function UserEditModal({
 				email: '',
 			})
 
-			// Fetch roles and user roles when modal opens
+			// Reset role selection and clear any previous role messages
+			setSelectedRoleId('')
+			setRoleMessage('')
+
+			// Fetch fresh role data when modal opens
 			fetchRoles()
 			fetchUserRoles(user.id)
 		}
@@ -107,19 +117,28 @@ export default function UserEditModal({
 	}
 
 	const fetchUserRoles = async (userId: number) => {
+		console.log('🔄 Fetching user roles for user:', userId)
 		try {
 			const response = await fetch(`${apiBaseUrl}/users/${userId}/roles`)
+			console.log('📡 User roles response status:', response.status)
 			if (response.ok) {
 				const data = await response.json()
+				console.log('📥 User roles data received:', data)
 				setUserRoles(data)
 			}
-		} catch {
+		} catch (error) {
+			console.error('❌ Error fetching user roles:', error)
 			setUserRoles([])
 		}
 	}
 
 	const handleAssignRole = async () => {
-		if (!selectedRoleId || !user) return
+		console.log('🎯 Attempting to assign role:', {
+			selectedRoleId,
+			userId: user?.id,
+			isActive: formData.isActive,
+		})
+		if (!selectedRoleId || !user || !formData.isActive) return
 
 		setRoleLoading(true)
 		try {
@@ -130,16 +149,34 @@ export default function UserEditModal({
 				},
 			)
 
+			console.log('📡 Role assignment response status:', response.status)
 			if (response.ok) {
+				const responseData = await response.json()
+				console.log('✅ Role assignment successful:', responseData)
 				setRoleMessage('Role assigned successfully!')
 				setSelectedRoleId('')
-				fetchUserRoles(user.id)
+				
+				// Refresh both user roles and parent component data
+				await fetchUserRoles(user.id)
+				if (onRoleChange) {
+					onRoleChange()
+				}
 				setTimeout(() => setRoleMessage(''), 3000)
 			} else {
 				const errorData = await response.json()
-				setRoleMessage(errorData.message || 'Failed to assign role')
+				console.error('❌ Role assignment failed:', errorData)
+				
+				// If it's a conflict error, refresh the user roles to sync data
+				if (response.status === 409) {
+					console.log('🔄 Conflict detected, refreshing user roles to sync...')
+					await fetchUserRoles(user.id)
+					setRoleMessage('Role already assigned. Role list updated.')
+				} else {
+					setRoleMessage(errorData.message || 'Failed to assign role')
+				}
 			}
-		} catch {
+		} catch (error) {
+			console.error('❌ Role assignment error:', error)
 			setRoleMessage('Failed to assign role')
 		} finally {
 			setRoleLoading(false)
@@ -148,7 +185,12 @@ export default function UserEditModal({
 	}
 
 	const handleRemoveRole = async (roleId: number) => {
-		if (!user || !confirm('Are you sure you want to remove this role?')) return
+		if (
+			!user ||
+			!formData.isActive ||
+			!confirm('Are you sure you want to remove this role?')
+		)
+			return
 
 		setRoleLoading(true)
 		try {
@@ -162,6 +204,10 @@ export default function UserEditModal({
 			if (response.ok) {
 				setRoleMessage('Role removed successfully!')
 				fetchUserRoles(user.id)
+				// Notify parent to refresh user list
+				if (onRoleChange) {
+					onRoleChange()
+				}
 				setTimeout(() => setRoleMessage(''), 3000)
 			} else {
 				const errorData = await response.json()
@@ -359,8 +405,12 @@ export default function UserEditModal({
 											type='button'
 											className='role-remove-btn'
 											onClick={() => handleRemoveRole(userRole.role_id)}
-											disabled={roleLoading}
-											title='Remove role'
+											disabled={roleLoading || !formData.isActive}
+											title={
+												formData.isActive
+													? 'Remove role'
+													: 'User must be active to remove roles'
+											}
 										>
 											×
 										</button>
@@ -379,13 +429,18 @@ export default function UserEditModal({
 							<select
 								id='roleSelect'
 								value={selectedRoleId}
-								onChange={(e) =>
-									setSelectedRoleId(
-										e.target.value === '' ? '' : Number(e.target.value),
-									)
+								onChange={(e) => {
+									const value =
+										e.target.value === '' ? '' : Number(e.target.value)
+									console.log('🎯 Role selected:', value)
+									setSelectedRoleId(value)
+								}}
+								disabled={roleLoading || !formData.isActive}
+								title={
+									formData.isActive
+										? 'Select a role to assign to the user'
+										: 'User must be active to assign roles'
 								}
-								disabled={roleLoading}
-								title='Select a role to assign to the user'
 							>
 								<option value=''>Select a role...</option>
 								{roles
@@ -402,7 +457,12 @@ export default function UserEditModal({
 								type='button'
 								className='btn-assign-role'
 								onClick={handleAssignRole}
-								disabled={roleLoading || !selectedRoleId}
+								disabled={roleLoading || !selectedRoleId || !formData.isActive}
+								title={
+									formData.isActive
+										? undefined
+										: 'User must be active to assign roles'
+								}
 							>
 								{roleLoading ? 'Assigning...' : 'Assign'}
 							</button>
