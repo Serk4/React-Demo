@@ -2,7 +2,6 @@ const express = require('express')
 const router = express.Router()
 const { getPool, isConnected } = require('../database-mysql')
 const sharedData = require('../shared-data')
-const { getPool } = require('../database-mysql')
 
 // Get all roles
 router.get('/', async (req, res) => {

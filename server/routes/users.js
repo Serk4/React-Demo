@@ -161,9 +161,6 @@ router.get('/:id/roles', async (req, res) => {
 			})
 
 			return res.json(userRoles)
-
-		if (!isConnected()) {
-			return res.json([])
 		}
 
 		const pool = getPool()
@@ -305,11 +302,6 @@ router.delete('/:id/roles/:roleId', async (req, res) => {
 			sharedData.removeUserRoleAssignment(userId, roleIdInt)
 
 			return res.json({ message: 'Role removed successfully' })
-
-		if (!isConnected()) {
-			return res
-				.status(500)
-				.json({ error: 'Database connection not available' })
 		}
 
 		const pool = getPool()
@@ -331,7 +323,6 @@ router.delete('/:id/roles/:roleId', async (req, res) => {
 })
 
 // POST /api/users - Create new user
-}) // POST /api/users - Create new user
 router.post('/', async (req, res) => {
 	try {
 		const { firstName, lastName, email, isActive = true } = req.body
@@ -350,9 +341,6 @@ router.post('/', async (req, res) => {
 			const existingUser = sharedData
 				.getUsers()
 				.find((u) => u.name.toLowerCase() === fullName.toLowerCase())
-			const existingUser = users.find(
-				(u) => u.name.toLowerCase() === fullName.toLowerCase(),
-			)
 			if (existingUser) {
 				return res.status(400).json({
 					error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
@@ -365,7 +353,7 @@ router.post('/', async (req, res) => {
 					error:
 						'Demo limit reached! 📊 This demo app has a 10-user limit. Delete an existing user or use the Reset button.',
 					currentCount: sharedData.getUsers().length,
-					currentCount: users.length,
+					currentCount: sharedData.getUsers().length,
 					maxAllowed: 10,
 					howToContinue: {
 						option1: 'Delete an existing user to test the Create feature',
@@ -392,10 +380,6 @@ router.post('/', async (req, res) => {
 			)
 
 			return res.status(201).json(createdUser)
-				`✅ Created new user in memory: ${newUser.name} (${users.length}/10)`,
-			)
-
-			return res.status(201).json(newUser)
 		}
 
 		const pool = getPool()
@@ -498,11 +482,6 @@ router.put('/:id', async (req, res) => {
 						u.name.toLowerCase() === fullName.toLowerCase() &&
 						u.id !== parseInt(id),
 				)
-			const existingUser = users.find(
-				(u) =>
-					u.name.toLowerCase() === fullName.toLowerCase() &&
-					u.id !== parseInt(id),
-			)
 			if (existingUser) {
 				return res.status(400).json({
 					error: `A user with the name "${fullName}" already exists. Please choose a different name.`,
@@ -600,7 +579,6 @@ router.delete('/:id', async (req, res) => {
 			console.log(`📊 Users after delete: ${sharedData.getUsers().length}`)
 			console.log(
 				`✅ Deleted user from memory: ${deletedUser.name} (${sharedData.getUsers().length}/10 remaining)`,
-				`✅ Deleted user from memory: ${deletedUser.name} (${users.length}/10 remaining)`,
 			)
 			return res.json({
 				message: 'User deleted successfully',
