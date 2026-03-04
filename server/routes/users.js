@@ -182,7 +182,7 @@ router.get('/:id/roles', async (req, res) => {
 		)
 
 		// Transform data to include role object
-		const userRoles = rows.map((row) => ({
+		const dbUserRoles = rows.map((row) => ({
 			id: row.id,
 			user_id: row.user_id,
 			role_id: row.role_id,
@@ -194,7 +194,7 @@ router.get('/:id/roles', async (req, res) => {
 			},
 		}))
 
-		res.json(userRoles)
+		res.json(dbUserRoles)
 	} catch (error) {
 		console.error('Error fetching user roles:', error)
 		res.status(500).json({ error: 'Failed to fetch user roles' })
