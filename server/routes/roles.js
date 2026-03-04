@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { getPool, isConnected } = require('../database-mysql')
 const sharedData = require('../shared-data')
+const { getPool } = require('../database-mysql')
 
 // Get all roles
 router.get('/', async (req, res) => {
@@ -29,6 +30,10 @@ router.get('/', async (req, res) => {
 		console.error('Error fetching roles:', error)
 		console.log('📊 Returning in-memory roles as fallback')
 		res.json(roles)
+		res.status(500).json({
+			error: 'Failed to fetch roles',
+			message: 'An error occurred while retrieving roles from the database',
+		})
 	}
 })
 
@@ -106,6 +111,10 @@ router.get('/:id', async (req, res) => {
 
 		role.users = []
 		res.json(role)
+		res.status(500).json({
+			error: 'Failed to fetch role',
+			message: 'An error occurred while retrieving role details',
+		})
 	}
 })
 
